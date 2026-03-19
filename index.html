@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Vue3 + TypeScript 从入门到实战 - 课程详情</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    :root {
+      --primary: #39f;          /* 慕课蓝 */
+      --orange: #f60;
+      --text: #333;
+      --light: #f5f7fa;
+      --gray: #666;
+      --border: #ebedf0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: var(--text);
+      background: var(--light);
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    a { color: var(--primary); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .banner {
+      background: linear-gradient(to right, #2a7be5, #00c4cc);
+      color: white;
+      padding: 3rem 2rem 2rem;
+      text-align: center;
+    }
+
+    .course-title {
+      font-size: 2.4rem;
+      margin: 0 0 1rem;
+    }
+
+    .course-meta {
+      font-size: 1.1rem;
+      opacity: 0.95;
+    }
+
+    .course-meta span {
+      margin: 0 1.2rem;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 2.5rem;
+      padding: 2.5rem 1.5rem;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 20px;
+      align-self: start;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      padding: 1.5rem;
+    }
+
+    .sidebar h3 {
+      margin: 0 0 1.2rem;
+      padding-bottom: 0.8rem;
+      border-bottom: 1px solid var(--border);
+      font-size: 1.25rem;
+      color: var(--primary);
+    }
+
+    .catalog-list {
+      list-style: none;
+    }
+
+    .catalog-list li {
+      margin: 0.9rem 0;
+    }
+
+    .catalog-list a {
+      display: block;
+      padding: 0.6rem 1rem;
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+
+    .catalog-list a:hover,
+    .catalog-list a.active {
+      background: rgba(51,153,255,0.1);
+      color: var(--primary);
+    }
+
+    .main {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      padding: 2.2rem;
+    }
+
+    .section {
+      margin-bottom: 3.5rem;
+      padding-bottom: 2.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section:last-child { border-bottom: none; }
+
+    .section h2 {
+      font-size: 1.65rem;
+      color: #222;
+      margin: 0 0 1.2rem;
+      position: relative;
+      padding-left: 1.1rem;
+    }
+
+    .section h2::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0.4em;
+      width: 5px; height: 1.1em;
+      background: var(--primary);
+      border-radius: 3px;
+    }
+
+    .teacher-info {
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+      margin: 1.5rem 0;
+    }
+
+    .teacher-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid var(--light);
+    }
+
+    .intro-text {
+      font-size: 1.05rem;
+      color: #444;
+    }
+
+    .btn {
+      display: inline-block;
+      background: var(--orange);
+      color: white;
+      padding: 0.8rem 1.8rem;
+      border-radius: 6px;
+      font-weight: bold;
+      margin: 1.5rem 0;
+      transition: background 0.2s;
+    }
+
+    .btn:hover {
+      background: #e65100;
+      text-decoration: none;
+    }
+
+    @media (max-width: 980px) {
+      .container {
+        grid-template-columns: 1fr;
+      }
+      .sidebar {
+        position: relative;
+        top: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 横幅 -->
+<div class="banner">
+  <h1 class="course-title">Vue3 + TypeScript 从入门到实战</h1>
+  <div class="course-meta">
+    <span><i class="fas fa-signal"></i> 中级</span>
+    <span><i class="far fa-clock"></i> 约 28 小时</span>
+    <span><i class="fas fa-users"></i> 已有 128,456 人学习</span>
+    <span><i class="fas fa-star"></i> 4.9 分</span>
+  </div>
+</div>
+
+<div class="container">
+  <!-- 左侧目录 -->
+  <aside class="sidebar">
+    <h3>课程目录</h3>
+    <ul class="catalog-list" id="catalog">
+      <li><a href="#intro">课程介绍</a></li>
+      <li><a href="#teacher">讲师介绍</a></li>
+      <li><a href="#outline">课程大纲</a></li>
+      <li><a href="#target">适合人群</a></li>
+      <li><a href="#learn">你将学到</a></li>
+      <li><a href="#faq">常见问题</a></li>
+    </ul>
+  </aside>
+
+  <!-- 右侧主要内容 -->
+  <main class="main">
+
+    <div class="section" id="intro">
+      <h2>课程介绍</h2>
+      <p class="intro-text">
+        Vue 3 已正式发布，Composition API + TypeScript 已成为当下最推荐的开发方式。本课程从零基础到企业级实战，带你系统掌握 Vue3 + TS 的完整开发流程，涵盖最新生态工具链、组件库封装、状态管理、项目架构、性能优化等核心内容。学完即可上手真实中大型项目开发。
+      </p>
+      <a href="#" class="btn">立即学习</a>
+    </div>
+
+    <div class="section" id="teacher">
+      <h2>讲师介绍</h2>
+      <div class="teacher-info">
+        <img src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?w=300&h=300&fit=crop" alt="讲师" class="teacher-avatar"/>
+        <div>
+          <h3 style="margin:0;">讲师：老马</h3>
+          <p style="margin:0.4rem 0; color:var(--gray);">10年一线开发经验 · 前字节跳动高级前端工程师</p>
+          <p>主导过多个千万级 DAU 项目，Vue3 项目落地经验丰富，慕课网金牌讲师。</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="section" id="outline">
+      <h2>课程大纲</h2>
+      <ul style="padding-left:1.8rem; list-style:disc;">
+        <li>第1章：Vue3 基础快速入门（Composition API 全面解析）</li>
+        <li>第2章：TypeScript 在 Vue3 中的最佳实践</li>
+        <li>第3章：从 0 到 1 搭建企业级项目脚手架</li>
+        <li>第4章：Pinia + VueUse + Vue Router 深度整合</li>
+        <li>第5章：组件库封装与设计系统（可复用组件实战）</li>
+        <li>第6章：性能优化 & 部署上线全流程</li>
+        <li>第7章：真实项目实战 - 后台管理系统（完整版）</li>
+        <li>第8章：源码级剖析 & 进阶技巧</li>
+      </ul>
+    </div>
+
+    <div class="section" id="target">
+      <h2>适合人群</h2>
+      <ul style="padding-left:1.8rem; list-style:disc;">
+        <li>想系统学习 Vue3 + TypeScript 的前端开发者</li>
+        <li>Vue2 开发者，想快速迁移到 Vue3</li>
+        <li>准备找工作 / 跳槽的中高级前端</li>
+        <li>对企业级项目架构、组件库封装感兴趣的同学</li>
+      </ul>
+    </div>
+
+    <div class="section" id="learn">
+      <h2>你将学到</h2>
+      <ul style="padding-left:1.8rem; list-style:disc; columns:2; column-gap:3rem;">
+        <li>Composition API 完整用法</li>
+        <li>TypeScript 在 Vue 中的高级技巧</li>
+        <li>企业级项目结构与规范</li>
+        <li>Pinia 状态管理最佳实践</li>
+        <li>可复用组件 / hooks 封装</li>
+        <li>性能优化与打包部署</li>
+        <li>真实后台管理系统全栈开发</li>
+        <li>常见面试题 & 源码解析</li>
+      </ul>
+    </div>
+
+    <div class="section" id="faq">
+      <h2>常见问题 Q&A</h2>
+      <details style="margin:1rem 0;">
+        <summary>Q：需要什么基础？</summary>
+        <p>A：掌握 HTML/CSS/JS 基础，会 Vue2 更好（没有也没关系，课程有快速回顾部分）。</p>
+      </details>
+      <details style="margin:1rem 0;">
+        <summary>Q：学完能做什么？</summary>
+        <p>A：能独立完成中大型 Vue3 + TS 项目，能看懂主流开源项目源码。</p>
+      </details>
+      <details style="margin:1rem 0;">
+        <summary>Q：有源码和练习吗？</summary>
+        <p>A：每章都有配套完整源码 + 练习题，结课还有大项目模板。</p>
+      </details>
+    </div>
+
+  </main>
+</div>
+
+<script>
+// 点击目录平滑滚动 + 高亮当前项
+document.querySelectorAll('#catalog a').forEach(link => {
+  link.addEventListener('click', function(e) {
+    e.preventDefault();
+    
+    // 移除所有 active
+    document.querySelectorAll('#catalog a').forEach(a => a.classList.remove('active'));
+    // 添加 active
+    this.classList.add('active');
+
+    const targetId = this.getAttribute('href').substring(1);
+    const target = document.getElementById(targetId);
+    
+    if (target) {
+      const offset = 80; // 顶部偏移（考虑固定导航）
+      const y = target.getBoundingClientRect().top + window.pageYOffset - offset;
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    }
+  });
+});
+</script>
+
+</body>
+</html>
