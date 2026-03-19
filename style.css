@@ -1,0 +1,129 @@
+/* style.css */
+:root {
+  --primary: #ff6b6b;
+  --primary-dark: #ee5253;
+  --bg: #fffaf0;
+  --text: #2d3436;
+  --shadow: 0 10px 30px rgba(255,107,107,0.2);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Noto Sans SC', system-ui, sans-serif;
+  background: linear-gradient(135deg, #fffaf0, #ffecec);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.container {
+  text-align: center;
+  max-width: 480px;
+  width: 100%;
+}
+
+h1 {
+  font-family: 'Ma Shan Zheng', cursive;
+  font-size: 3.8rem;
+  color: var(--primary);
+  margin-bottom: 1.5rem;
+  text-shadow: 3px 3px 0 #ffecec;
+}
+
+h1 span {
+  color: #ff9f43;
+  font-size: 1.1em;
+}
+
+.decision-box {
+  background: white;
+  border-radius: 24px;
+  padding: 2.5rem 1.8rem;
+  margin: 2rem 0;
+  box-shadow: var(--shadow);
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.decision-box.active {
+  transform: scale(1.04);
+  box-shadow: 0 20px 50px rgba(255,107,107,0.3);
+}
+
+.emoji {
+  font-size: 6rem;
+  margin-bottom: 1rem;
+  line-height: 1;
+}
+
+#food {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin: 0.5rem 0;
+  color: var(--primary-dark);
+}
+
+#comment {
+  font-size: 1.1rem;
+  color: #636e72;
+  font-style: italic;
+}
+
+button {
+  font-family: inherit;
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: white;
+  background: var(--primary);
+  border: none;
+  padding: 1rem 2.5rem;
+  border-radius: 50px;
+  cursor: pointer;
+  box-shadow: 0 8px 25px rgba(255,107,107,0.35);
+  transition: all 0.25s;
+  margin: 1.5rem 0;
+}
+
+button:hover {
+  background: var(--primary-dark);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 35px rgba(255,107,107,0.45);
+}
+
+button:active {
+  transform: translateY(1px);
+}
+
+.tips {
+  color: #777;
+  font-size: 0.95rem;
+  margin-top: 1rem;
+}
+
+#count {
+  color: var(--primary);
+  font-weight: bold;
+}
+
+footer {
+  margin-top: 3rem;
+  color: #999;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 500px) {
+  h1 { font-size: 3rem; }
+  .emoji { font-size: 5rem; }
+  #food { font-size: 1.6rem; }
+}
