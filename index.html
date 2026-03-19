@@ -3,225 +3,161 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>XXX - 信息化工程师简历</title>
+  <title>粒子星空 · 鼠标引力场</title>
   <style>
-    * { margin:0; padding:0; box-sizing:border-box; }
-    body {
-      font-family: "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
-      background: #f8f9fa;
-      color: #333;
-      line-height: 1.6;
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
     }
-    .container {
-      max-width: 1100px;
-      margin: 30px auto;
-      background: white;
-      box-shadow: 0 2px 20px rgba(0,0,0,0.08);
-      display: flex;
-      min-height: 1000px;
-    }
-    .sidebar {
-      width: 320px;
-      background: #1e3a8a; /* 深蓝 主色 */
-      color: white;
-      padding: 40px 30px;
-    }
-    .main {
-      flex: 1;
-      padding: 40px 50px;
-    }
-    h1 {
-      font-size: 28px;
-      margin-bottom: 8px;
-      font-weight: 600;
-    }
-    .subtitle {
-      font-size: 16px;
-      opacity: 0.9;
-      margin-bottom: 25px;
-    }
-    h2 {
-      font-size: 18px;
-      color: #1e3a8a;
-      border-bottom: 2px solid #e5e7eb;
-      padding-bottom: 8px;
-      margin: 35px 0 18px;
-      font-weight: 600;
-    }
-    .sidebar h2 {
-      color: white;
-      border-bottom: 1px solid rgba(255,255,255,0.2);
-    }
-    .info p {
-      margin: 10px 0;
-      font-size: 15px;
-    }
-    .info .label {
-      font-weight: bold;
-      display: inline-block;
-      width: 160px;
-    }
-    .tag {
-      display: inline-block;
-      background: rgba(255,255,255,0.15);
-      padding: 4px 12px;
-      border-radius: 20px;
-      margin: 6px 6px 6px 0;
-      font-size: 13px;
-    }
-    .skill-item {
-      margin: 18px 0;
-    }
-    .skill-name {
-      font-weight: 500;
-      margin-bottom: 6px;
+    canvas {
       display: block;
     }
-    ul {
-      list-style: none;
-      padding-left: 20px;
-    }
-    ul li {
-      position: relative;
-      margin-bottom: 10px;
-    }
-    ul li::before {
-      content: "•";
+    #info {
       position: absolute;
-      left: -18px;
-      color: #1e3a8a;
-      font-size: 20px;
-    }
-    .sidebar ul li::before {
-      color: #93c5fd;
-    }
-    .project-title {
-      font-weight: bold;
-      margin: 20px 0 8px;
-      color: #1e40af;
-    }
-    .company {
-      font-weight: 600;
-      color: #444;
-    }
-    .period {
-      float: right;
-      color: #666;
-      font-size: 14px;
-    }
-    @media print {
-      body { background: white; }
-      .container { box-shadow: none; margin: 0; }
-      .sidebar { background: #f1f5f9 !important; color: #000 !important; }
-      .sidebar h2 { color: #1e3a8a !important; }
-      .sidebar .tag { background: #e5e7eb; color: #000; }
-    }
-    @media (max-width: 800px) {
-      .container { flex-direction: column; }
-      .sidebar { width: 100%; padding: 30px 20px; }
+      top: 20px;
+      left: 20px;
+      color: rgba(255,255,255,0.6);
+      font-family: system-ui, sans-serif;
+      font-size: 1rem;
+      pointer-events: none;
+      z-index: 10;
     }
   </style>
 </head>
 <body>
 
-<div class="container">
-  <!-- 左侧突出卖点 -->
-  <div class="sidebar">
-    <h1>XXX</h1>
-    <div class="subtitle">信息化工程师 / 数字化转型 / 信息化主管</div>
+<canvas id="c"></canvas>
+<div id="info">移动鼠标 / 拖动手指 · 感受引力</div>
 
-    <h2>核心优势</h2>
-    <ul>
-      <li>5年以上制造业信息化经验，覆盖机械、纺织等行业，熟悉从需求调研→系统选型→开发测试→实施落地→运维优化的完整闭环</li>
-      <li>具备“业务理解 + 系统实施 + 数据与集成 + 多方沟通”复合能力，非单一运维或开发角色</li>
-      <li>具备AI知识库/智能体/接口集成的实际应用经验，可将大模型能力嵌入企业现有系统与业务流程</li>
-      <li>主导多项企业级系统建设与集成项目，具备从0到1落地经验</li>
-      <li>持有软考中级（系统集成项目管理工程师），具备规范化项目管理意识</li>
-    </ul>
+<script>
+// ==================== 配置 ====================
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
 
-    <h2>专业技能</h2>
-    <div class="skill-item">
-      <span class="skill-name">信息化系统 / 平台</span>
-      <span class="tag">致远OA / BPM</span><span class="tag">用友U8 ERP</span><span class="tag">MES</span><span class="tag">CRM</span><span class="tag">HR</span><span class="tag">SRM</span>
-      <span class="tag">CBS银企直连</span><span class="tag">帆软报表</span><span class="tag">契约锁电子签章</span><span class="tag">企业微信</span>
-    </div>
-    <div class="skill-item">
-      <span class="skill-name">技术与开发</span>
-      <span class="tag">Java SpringBoot</span><span class="tag">SQL Server / MySQL</span><span class="tag">Vue / JavaScript</span><span class="tag">HTML/CSS</span>
-      <span class="tag">系统二次开发</span><span class="tag">供应商代码走查</span>
-    </div>
-    <div class="skill-item">
-      <span class="skill-name">工具与方法</span>
-      <span class="tag">墨刀原型</span><span class="tag">氚云低代码</span><span class="tag">需求分析</span><span class="tag">系统集成</span><span class="tag">PDCA</span><span class="tag">精益管理</span>
-    </div>
+let width, height;
+function resize() {
+  width = canvas.width = window.innerWidth;
+  height = canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
 
-    <h2>证书</h2>
-    <ul>
-      <li>系统集成项目管理工程师（软考中级）</li>
-      <li>帆软报表开发工程师</li>
-      <li>C1</li>
-    </ul>
-  </div>
+// 鼠标/触摸位置
+let mouse = { x: width/2, y: height/2, down: false };
+window.addEventListener('mousemove', e => {
+  mouse.x = e.clientX;
+  mouse.y = e.clientY;
+});
+window.addEventListener('touchmove', e => {
+  if (e.touches.length > 0) {
+    mouse.x = e.touches[0].clientX;
+    mouse.y = e.touches[0].clientY;
+  }
+}, { passive: true });
+window.addEventListener('touchstart', e => {
+  if (e.touches.length > 0) {
+    mouse.x = e.touches[0].clientX;
+    mouse.y = e.touches[0].clientY;
+    mouse.down = true;
+  }
+});
+window.addEventListener('touchend', () => mouse.down = false);
 
-  <!-- 右侧主内容 -->
-  <div class="main">
-    <h2>个人信息</h2>
-    <div class="info">
-      <p><span class="label">联系电话：</span>15XXXXX</p>
-      <p><span class="label">邮箱：</span>XXXXX@qq.com</p>
-      <p><span class="label">籍贯 / 现居：</span>XX　｜　XX</p>
-      <p><span class="label">出生年月 / 身高体重：</span>1997.01　｜　170cm / 65kg</p>
-    </div>
+// 粒子类
+class Particle {
+  constructor() {
+    this.reset();
+  }
+  reset() {
+    this.x = Math.random() * width;
+    this.y = Math.random() * height;
+    this.vx = (Math.random() - 0.5) * 0.8;
+    this.vy = (Math.random() - 0.5) * 0.8;
+    this.size = Math.random() * 2.2 + 0.6;
+    this.hue = Math.random() * 60 + 180; // 青-蓝-紫范围
+    this.alpha = Math.random() * 0.5 + 0.3;
+    this.trail = [];
+    this.trailLength = Math.floor(Math.random() * 8 + 4);
+  }
+  update() {
+    // 引力/排斥
+    const dx = mouse.x - this.x;
+    const dy = mouse.y - this.y;
+    const dist = Math.hypot(dx, dy) || 1; // 避免除0
+    const force = mouse.down ? 120 : 60; // 按下更强排斥
 
-    <h2>工作经历</h2>
+    const power = force / (dist * dist);
+    const ax = dx / dist * power * 0.8;
+    const ay = dy / dist * power * 0.8;
 
-    <p class="company">XXX股份有限公司　<span class="period">2022.XX – 至今</span></p>
-    <p><strong>系统应用工程师</strong>（制砖一体化解决方案提供商，制造型企业）</p>
+    this.vx += ax;
+    this.vy += ay;
 
-    <p class="project-title">【核心项目】业财一体化：CBS银企直连与多系统协同项目（项目负责人）</p>
-    <ul>
-      <li>主导重构财务结算流程，打通致远OA → 用友U8 → CBS 全链路，实现审批→自动付款→凭证自动生成闭环</li>
-      <li>解决多账套、多网银主体资金自动下发与回单关联难题，资金支付效率大幅提升，财务零人工差错</li>
-      <li>被公司作为资金精细化管理经典案例</li>
-    </ul>
+    // 轻微阻力 + 边界反弹
+    this.vx *= 0.98;
+    this.vy *= 0.98;
 
-    <p class="project-title">【核心项目】基于Dify大模型的企业级智能知识库从0到1建设</p>
-    <ul>
-      <li>引入Dify + LLM，收集处理海量非结构化数据，搭建多场景知识库</li>
-      <li>通过API将AI智能体集成至企业微信 & OA，实现对话式业务检索</li>
-      <li>显著缩短文档检索与答疑时间，提升售后效率与新员工上手速度</li>
-    </ul>
+    if (this.x < 0 || this.x > width)  this.vx *= -0.7;
+    if (this.y < 0 || this.y > height) this.vy *= -0.7;
 
-    <ul>
-      <li>负责致远OA运维与BPM流程建模，覆盖营销/采购/费用/生产核心流程</li>
-      <li>统筹U8 ERP、MES、CRM、HR、SRM、CBS、电子签章、企业微信等系统运维与集成，保障24/7稳定</li>
-      <li>主导ERP集采平台、SRM供应商管理系统实施，推动采购协同与成本降低</li>
-      <li>组织信息化培训、项目申报（质量奖、AEO、数字化转型），支持德国分公司流程落地</li>
-    </ul>
+    this.x += this.vx;
+    this.y += this.vy;
 
-    <p class="company" style="margin-top:30px;">XXXX有限公司　<span class="period">2019 – 2022 ｜ 泉州</span></p>
-    <p><strong>IT专员</strong>（集团型纺织制造企业）</p>
-    <ul>
-      <li>负责桌面运维、用户支持、服务器/网络基础运维</li>
-      <li>建立IT资产管理台账，定期盘点</li>
-      <li>支持NC等工业系统日常运维</li>
-    </ul>
+    // 记录轨迹
+    this.trail.push({x: this.x, y: this.y});
+    if (this.trail.length > this.trailLength) this.trail.shift();
 
-    <h2>教育背景</h2>
-    <p><strong>XXXXXX学校</strong>　信息管理与信息系统　本科　<span class="period">2015 – 2019</span></p>
+    // 超出边界重置
+    if (this.x < -50 || this.x > width+50 || this.y < -50 || this.y > height+50) {
+      this.reset();
+    }
+  }
+  draw() {
+    // 尾迹
+    ctx.beginPath();
+    ctx.moveTo(this.trail[0]?.x || this.x, this.trail[0]?.y || this.y);
+    for (let i = 1; i < this.trail.length; i++) {
+      const p = this.trail[i];
+      ctx.lineTo(p.x, p.y);
+    }
+    ctx.strokeStyle = `hsla(${this.hue}, 80%, 70%, ${this.alpha * 0.6})`;
+    ctx.lineWidth = this.size * 0.6;
+    ctx.stroke();
 
-    <h2>自我评价</h2>
-    <ul>
-      <li>深耕制造业信息化5年以上，熟悉数字化落地的现实约束与路径</li>
-      <li>对业务敏感，能将需求高效转化为可实施的信息化方案</li>
-      <li>良好沟通协调能力，在业务、供应商、技术团队间发挥桥梁作用</li>
-      <li>持续关注AI、低代码、流程自动化等领域，具备新技术落地能力</li>
-    </ul>
+    // 粒子本体（发光点）
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx.fillStyle = `hsla(${this.hue}, 100%, 80%, ${this.alpha})`;
+    ctx.shadowBlur = 15;
+    ctx.shadowColor = `hsl(${this.hue}, 100%, 70%)`;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  }
+}
 
-    <h2>兴趣爱好</h2>
-    <p>跑步｜阅读｜运动</p>
-  </div>
-</div>
+// 创建粒子
+const particles = [];
+const particleCount = Math.min( Math.floor((width * height) / 12000), 350 ); // 密度自适应
+for (let i = 0; i < particleCount; i++) {
+  particles.push(new Particle());
+}
 
+// 动画循环
+function animate() {
+  ctx.fillStyle = 'rgba(0,0,0,0.06)'; // 拖尾效果
+  ctx.fillRect(0, 0, width, height);
+
+  particles.forEach(p => {
+    p.update();
+    p.draw();
+  });
+
+  requestAnimationFrame(animate);
+}
+animate();
+</script>
 </body>
 </html>
