@@ -3,225 +3,237 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>猫咪追激光点 - 纯 CSS 玩具</title>
+  <title>Confetti Clicker - 点击爆彩纸屑！</title>
   <style>
     :root {
-      --cat-speed: 0.8s;
-      --laser-color: #ff0044;
+      --bg: #0f0f23;
+      --text: #e0e0ff;
+      --accent: #ff6bff;
     }
 
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
+    * { margin:0; padding:0; box-sizing:border-box; }
     body {
       height: 100vh;
-      background: linear-gradient(135deg, #e0f7fa, #b2ebf2);
-      overflow: hidden;
-      cursor: none;
+      background: var(--bg);
+      color: var(--text);
       font-family: system-ui, sans-serif;
+      overflow: hidden;
+      cursor: pointer;
+      user-select: none;
+      touch-action: manipulation;
     }
 
-    .laser {
+    canvas {
       position: fixed;
-      width: 18px;
-      height: 18px;
-      background: radial-gradient(circle, var(--laser-color) 30%, transparent 70%);
-      border-radius: 50%;
+      inset: 0;
       pointer-events: none;
+      z-index: 1;
+    }
+
+    .ui {
+      position: relative;
       z-index: 10;
-      box-shadow: 0 0 20px var(--laser-color), 0 0 40px var(--laser-color);
-      transform: translate(-50%, -50%);
-      transition: all 0.05s linear;
-    }
-
-    .scene {
-      position: relative;
-      width: 100%;
       height: 100%;
-    }
-
-    .cat {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      width: 180px;
-      height: 160px;
-      transform: translate(-50%, -50%);
-      transition: left var(--cat-speed) ease-out, top var(--cat-speed) ease-out;
-      z-index: 5;
-    }
-
-    .cat-body {
-      width: 140px;
-      height: 100px;
-      background: #ff9800;
-      border-radius: 50% 50% 40% 40% / 60% 60% 40% 40%;
-      position: relative;
-      left: 20px;
-      top: 40px;
-      box-shadow: inset -20px -15px 30px rgba(0,0,0,0.2);
-    }
-
-    .cat-head {
-      width: 100px;
-      height: 90px;
-      background: #ff9800;
-      border-radius: 50%;
-      position: absolute;
-      left: 20px;
-      top: -50px;
-      box-shadow: inset -15px -10px 25px rgba(0,0,0,0.15);
-    }
-
-    .ear {
-      position: absolute;
-      width: 0;
-      height: 0;
-      border-left: 20px solid transparent;
-      border-right: 20px solid transparent;
-      border-bottom: 35px solid #ff9800;
-    }
-    .ear.left  { left: 10px; transform: rotate(-25deg); }
-    .ear.right { right: 10px; transform: rotate(25deg); }
-
-    .eye {
-      position: absolute;
-      width: 22px;
-      height: 28px;
-      background: white;
-      border-radius: 50%;
-      top: 28px;
-      box-shadow: inset 0 4px 8px rgba(0,0,0,0.2);
-    }
-    .eye.left  { left: 20px; }
-    .eye.right { right: 20px; }
-
-    .pupil {
-      width: 10px;
-      height: 14px;
-      background: #000;
-      border-radius: 50%;
-      position: absolute;
-      top: 6px;
-      left: 6px;
-      transition: left 0.2s, top 0.2s;
-    }
-
-    .nose {
-      width: 12px;
-      height: 8px;
-      background: #ff4081;
-      border-radius: 50%;
-      position: absolute;
-      top: 50px;
-      left: 44px;
-    }
-
-    .tail {
-      width: 100px;
-      height: 20px;
-      background: #ef6c00;
-      border-radius: 50% 50% 0 0;
-      position: absolute;
-      bottom: -10px;
-      left: 20px;
-      transform-origin: left center;
-      animation: wag 1.2s infinite alternate ease-in-out;
-    }
-
-    @keyframes wag {
-      0%   { transform: rotate(-25deg); }
-      100% { transform: rotate(25deg); }
-    }
-
-    /* 猫追激光的核心：用 :hover 模拟追踪（其实是鼠标位置控制激光，猫追激光） */
-    body:hover .cat {
-      /* 猫的位置跟随激光，但加延迟感 */
-      left: calc(var(--mouse-x, 50vw) - 90px);
-      top:  calc(var(--mouse-y, 50vh) - 80px);
-    }
-
-    /* 眼睛看激光方向（简易版） */
-    body:hover .pupil {
-      left: calc(50% - 5px + (var(--mouse-x, 50vw) - 50vw) * 0.03);
-      top:  calc(50% - 7px + (var(--mouse-y, 50vh) - 50vh) * 0.03);
-    }
-
-    /* 背景轻微反应 */
-    body:hover {
-      background: linear-gradient(135deg, #e0f7fa, #b2ebf2, #81d4fa);
-      transition: background 3s;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      pointer-events: none;
     }
 
     h1 {
-      position: absolute;
-      top: 20px;
+      font-size: clamp(3rem, 12vw, 8rem);
+      font-weight: 900;
+      color: #fff;
+      text-shadow: 0 0 40px var(--accent), 0 0 80px #00ffff;
+      margin-bottom: 1rem;
+      animation: glow 3s infinite alternate;
+    }
+
+    @keyframes glow {
+      from { text-shadow: 0 0 20px var(--accent), 0 0 40px #00ffff; }
+      to   { text-shadow: 0 0 60px var(--accent), 0 0 120px #00ffff; }
+    }
+
+    .score {
+      font-size: clamp(4rem, 15vw, 12rem);
+      font-weight: bold;
+      color: #fff;
+      text-shadow: 0 0 30px currentColor;
+      margin: 1rem 0;
+    }
+
+    .subtitle {
+      font-size: 1.5rem;
+      opacity: 0.8;
+      margin-top: 1rem;
+    }
+
+    .achieve {
+      position: fixed;
+      top: 20%;
       left: 50%;
       transform: translateX(-50%);
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(10px);
+      padding: 1.2rem 2.5rem;
+      border-radius: 20px;
+      border: 2px solid var(--accent);
+      font-size: 1.8rem;
+      font-weight: bold;
       color: #fff;
-      text-shadow: 0 2px 10px rgba(0,0,0,0.4);
-      z-index: 20;
-      font-size: 2.2rem;
       pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.5s, transform 0.5s;
+      z-index: 20;
+      white-space: nowrap;
+    }
+
+    .achieve.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(-20px);
     }
 
     .hint {
       position: absolute;
-      bottom: 20px;
+      bottom: 2rem;
       left: 50%;
       transform: translateX(-50%);
-      color: rgba(255,255,255,0.8);
-      font-size: 1rem;
+      font-size: 1.1rem;
+      opacity: 0.7;
       pointer-events: none;
-    }
-
-    @media (max-width: 600px) {
-      .cat { width: 140px; height: 120px; }
-      .cat-body { width: 110px; height: 80px; left: 15px; top: 30px; }
-      .cat-head { width: 80px; height: 70px; left: 15px; top: -40px; }
-      h1 { font-size: 1.8rem; }
     }
   </style>
 </head>
-<body onmousemove="document.documentElement.style.setProperty('--mouse-x', event.clientX + 'px'); document.documentElement.style.setProperty('--mouse-y', event.clientY + 'px');">
+<body>
 
-  <h1>快来逗猫猫！</h1>
+<canvas id="c"></canvas>
 
-  <div class="scene">
-    <div class="cat">
-      <div class="tail"></div>
-      <div class="cat-body">
-        <div class="cat-head">
-          <div class="ear left"></div>
-          <div class="ear right"></div>
-          <div class="eye left"><div class="pupil"></div></div>
-          <div class="eye right"><div class="pupil"></div></div>
-          <div class="nose"></div>
-        </div>
-      </div>
-    </div>
-  </div>
+<div class="ui">
+  <h1>Confetti<br>Clicker</h1>
+  <div class="score" id="score">0</div>
+  <div class="subtitle">点我！爆彩纸屑！</div>
+</div>
 
-  <div class="laser" id="laser"></div>
+<div class="achieve" id="achieve"></div>
 
-  <div class="hint">移动鼠标（或手指拖动）逗它玩～</div>
+<div class="hint">点击 / 轻触 屏幕任意位置</div>
 
-  <script>
-    // 只用来更新激光点位置（非常小的 JS，只有这一行逻辑）
-    document.addEventListener('mousemove', e => {
-      document.getElementById('laser').style.left = e.clientX + 'px';
-      document.getElementById('laser').style.top  = e.clientY + 'px';
-    });
-    // 触摸设备支持
-    document.addEventListener('touchmove', e => {
-      const touch = e.touches[0];
-      document.getElementById('laser').style.left = touch.clientX + 'px';
-      document.getElementById('laser').style.top  = touch.clientY + 'px';
-    }, { passive: true });
-  </script>
+<script>
+// ------------------- Canvas Confetti -------------------
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+window.addEventListener('resize', () => {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+});
+
+let particles = [];
+
+class Particle {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.size = Math.random() * 8 + 4;
+    this.speedX = Math.random() * 6 - 3;
+    this.speedY = Math.random() * -12 - 8;
+    this.color = `hsl(${Math.random()*360}, 100%, 60%)`;
+    this.gravity = 0.15;
+    this.friction = 0.98;
+    this.alpha = 1;
+    this.rotation = Math.random() * Math.PI * 2;
+    this.rotSpeed = Math.random() * 0.1 - 0.05;
+  }
+
+  update() {
+    this.speedY += this.gravity;
+    this.speedX *= this.friction;
+    this.speedY *= this.friction;
+    this.x += this.speedX;
+    this.y += this.speedY;
+    this.rotation += this.rotSpeed;
+    this.alpha -= 0.008;
+  }
+
+  draw() {
+    ctx.save();
+    ctx.globalAlpha = this.alpha;
+    ctx.translate(this.x, this.y);
+    ctx.rotate(this.rotation);
+    ctx.fillStyle = this.color;
+    ctx.fillRect(-this.size/2, -this.size/2, this.size, this.size);
+    ctx.restore();
+  }
+}
+
+function createConfetti(x, y, count = 80) {
+  for (let i = 0; i < count; i++) {
+    particles.push(new Particle(x, y));
+  }
+}
+
+function animate() {
+  ctx.fillStyle = 'rgba(15,15,35,0.12)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  particles = particles.filter(p => p.alpha > 0.01);
+  particles.forEach(p => {
+    p.update();
+    p.draw();
+  });
+
+  requestAnimationFrame(animate);
+}
+
+animate();
+
+// ------------------- Click / Touch Logic -------------------
+let score = 0;
+const scoreEl = document.getElementById('score');
+const achieveEl = document.getElementById('achieve');
+
+const achievements = [
+  { count: 10,  text: "新手上路！10次啦～🎉" },
+  { count: 50,  text: "小有成就！50次！✨" },
+  { count: 100, text: "上瘾警告！100次！🔥" },
+  { count: 250, text: "你是认真的吗？！250次…😳" },
+  { count: 500, text: "彩纸屑之神！500次！🌟" },
+  { count: 1000,text: "……你赢了。1000次。👑" }
+];
+
+let shown = new Set();
+
+function showAchieve(text) {
+  achieveEl.textContent = text;
+  achieveEl.classList.add('show');
+  setTimeout(() => achieveEl.classList.remove('show'), 3000);
+}
+
+function handleClick(e) {
+  const x = e.clientX || (e.touches && e.touches[0].clientX);
+  const y = e.clientY || (e.touches && e.touches[0].clientY);
+
+  score++;
+  scoreEl.textContent = score;
+
+  createConfetti(x, y, 60 + Math.floor(score / 50) * 10); // 越多越爽
+
+  // 检查成就
+  achievements.forEach(a => {
+    if (score >= a.count && !shown.has(a.count)) {
+      shown.add(a.count);
+      showAchieve(a.text);
+    }
+  });
+}
+
+window.addEventListener('click', handleClick);
+window.addEventListener('touchstart', handleClick, { passive: true });
+</script>
 
 </body>
 </html>
