@@ -2,237 +2,395 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Confetti Clicker - 点击爆彩纸屑！</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>逗猫猫 · 激光笔玩具</title>
   <style>
     :root {
-      --bg: #0f0f23;
-      --text: #e0e0ff;
-      --accent: #ff6bff;
+      --cat-speed-base: 0.9s;
+      --cat-speed-max: 1.8s;
+      --laser-color: #ff0044;
+      --bg-start: #fff0f5;
+      --bg-end: #e0f7fa;
     }
 
-    * { margin:0; padding:0; box-sizing:border-box; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     body {
-      height: 100vh;
-      background: var(--bg);
-      color: var(--text);
-      font-family: system-ui, sans-serif;
+      height: 100dvh;
+      background: linear-gradient(135deg, var(--bg-start), var(--bg-end));
       overflow: hidden;
-      cursor: pointer;
+      font-family: system-ui, -apple-system, sans-serif;
+      cursor: none;
+      touch-action: none;
       user-select: none;
-      touch-action: manipulation;
     }
 
-    canvas {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 1;
-    }
-
-    .ui {
+    .scene {
       position: relative;
-      z-index: 10;
+      width: 100%;
       height: 100%;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      pointer-events: none;
     }
 
-    h1 {
-      font-size: clamp(3rem, 12vw, 8rem);
-      font-weight: 900;
-      color: #fff;
-      text-shadow: 0 0 40px var(--accent), 0 0 80px #00ffff;
-      margin-bottom: 1rem;
-      animation: glow 3s infinite alternate;
-    }
-
-    @keyframes glow {
-      from { text-shadow: 0 0 20px var(--accent), 0 0 40px #00ffff; }
-      to   { text-shadow: 0 0 60px var(--accent), 0 0 120px #00ffff; }
-    }
-
-    .score {
-      font-size: clamp(4rem, 15vw, 12rem);
-      font-weight: bold;
-      color: #fff;
-      text-shadow: 0 0 30px currentColor;
-      margin: 1rem 0;
-    }
-
-    .subtitle {
-      font-size: 1.5rem;
-      opacity: 0.8;
-      margin-top: 1rem;
-    }
-
-    .achieve {
+    /* 激光点 */
+    .laser {
       position: fixed;
-      top: 20%;
+      width: 24px;
+      height: 24px;
+      background: radial-gradient(circle at 30% 30%, #fff, var(--laser-color) 40%, transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 20;
+      box-shadow: 
+        0 0 20px var(--laser-color),
+        0 0 40px var(--laser-color),
+        inset 0 0 10px #fff;
+      transform: translate(-50%, -50%);
+      transition: transform 0.08s linear;
+    }
+
+    .laser::after {
+      content: '';
+      position: absolute;
+      inset: -8px;
+      background: var(--laser-color);
+      border-radius: 50%;
+      opacity: 0.3;
+      filter: blur(12px);
+    }
+
+    /* 猫咪 */
+    .cat-container {
+      position: absolute;
+      width: 220px;
+      height: 180px;
+      pointer-events: none;
+      transition: 
+        left var(--cat-speed-base) cubic-bezier(0.25, 0.1, 0.25, 1),
+        top var(--cat-speed-base) cubic-bezier(0.25, 0.1, 0.25, 1);
+      z-index: 10;
+    }
+
+    .cat {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.4s ease;
+    }
+
+    .cat-body {
+      width: 160px;
+      height: 110px;
+      background: linear-gradient(#ffb74d, #ff9800);
+      border-radius: 50% 50% 45% 45% / 60% 60% 40% 40%;
+      position: absolute;
+      left: 30px;
+      top: 50px;
+      box-shadow: inset -25px -15px 35px rgba(0,0,0,0.18);
+    }
+
+    .cat-head {
+      width: 110px;
+      height: 95px;
+      background: linear-gradient(#ffb74d, #ff9800);
+      border-radius: 50% 50% 48% 52% / 55% 55% 45% 45%;
+      position: absolute;
+      left: 55px;
+      top: 0;
+      box-shadow: inset -18px -12px 30px rgba(0,0,0,0.15);
+    }
+
+    .ear {
+      position: absolute;
+      width: 0;
+      height: 0;
+      border-left: 22px solid transparent;
+      border-right: 22px solid transparent;
+      border-bottom: 40px solid #ff9800;
+      filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
+    }
+    .ear.left  { left: 12px; transform: rotate(-30deg); }
+    .ear.right { right: 12px; transform: rotate(30deg); }
+
+    .eye {
+      position: absolute;
+      width: 26px;
+      height: 32px;
+      background: white;
+      border-radius: 50%;
+      top: 32px;
+      box-shadow: inset 0 5px 10px rgba(0,0,0,0.15);
+    }
+    .eye.left  { left: 24px; }
+    .eye.right { right: 24px; }
+
+    .pupil {
+      width: 12px;
+      height: 18px;
+      background: #111;
+      border-radius: 50%;
+      position: absolute;
+      top: 7px;
+      left: 7px;
+      transition: all 0.18s ease;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);
+    }
+
+    .blush {
+      width: 38px;
+      height: 18px;
+      background: #ff80ab;
+      border-radius: 50%;
+      position: absolute;
+      top: 50px;
+      opacity: 0.6;
+      filter: blur(6px);
+    }
+    .blush.left  { left: 8px; }
+    .blush.right { right: 8px; }
+
+    .nose {
+      width: 14px;
+      height: 10px;
+      background: #ff4081;
+      border-radius: 50% 50% 40% 40%;
+      position: absolute;
+      top: 55px;
+      left: 48px;
+    }
+
+    .tail {
+      width: 120px;
+      height: 24px;
+      background: linear-gradient(to right, #ef6c00, #ff9800);
+      border-radius: 50% 30% 30% 50%;
+      position: absolute;
+      bottom: -8px;
+      left: 20px;
+      transform-origin: left center;
+      animation: wag-tail 1.4s infinite alternate ease-in-out;
+    }
+
+    @keyframes wag-tail {
+      0%   { transform: rotate(-30deg); }
+      100% { transform: rotate(30deg); }
+    }
+
+    /* 疲劳状态 */
+    .cat.tired .cat-container {
+      transition-duration: var(--cat-speed-max);
+    }
+    .cat.tired .tail {
+      animation-duration: 3s;
+    }
+    .cat.tired .eye {
+      height: 20px;
+      top: 38px;
+    }
+
+    /* 交互按钮 */
+    .controls {
+      position: fixed;
+      bottom: 20px;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(0,0,0,0.6);
-      backdrop-filter: blur(10px);
-      padding: 1.2rem 2.5rem;
-      border-radius: 20px;
-      border: 2px solid var(--accent);
-      font-size: 1.8rem;
-      font-weight: bold;
-      color: #fff;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.5s, transform 0.5s;
-      z-index: 20;
-      white-space: nowrap;
+      z-index: 30;
+      display: flex;
+      gap: 16px;
     }
 
-    .achieve.show {
-      opacity: 1;
-      transform: translateX(-50%) translateY(-20px);
+    .btn {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.9);
+      backdrop-filter: blur(8px);
+      border: 2px solid #ffb74d;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+      font-size: 2rem;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn:active {
+      transform: scale(0.92);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     }
 
     .hint {
-      position: absolute;
-      bottom: 2rem;
+      position: fixed;
+      top: 16px;
       left: 50%;
       transform: translateX(-50%);
-      font-size: 1.1rem;
-      opacity: 0.7;
+      background: rgba(0,0,0,0.5);
+      color: white;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      z-index: 25;
       pointer-events: none;
+      opacity: 0.85;
+    }
+
+    .energy-bar {
+      position: fixed;
+      top: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 180px;
+      height: 12px;
+      background: rgba(255,255,255,0.3);
+      border-radius: 6px;
+      overflow: hidden;
+      z-index: 25;
+    }
+
+    .energy-fill {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #4caf50, #8bc34a);
+      transition: width 0.4s ease;
     }
   </style>
 </head>
 <body>
 
-<canvas id="c"></canvas>
+<div class="scene">
+  <div class="cat" id="cat">
+    <div class="cat-container" id="catPos">
+      <div class="tail"></div>
+      <div class="cat-body">
+        <div class="cat-head">
+          <div class="ear left"></div>
+          <div class="ear right"></div>
+          <div class="eye left"><div class="pupil"></div></div>
+          <div class="eye right"><div class="pupil"></div></div>
+          <div class="blush left"></div>
+          <div class="blush right"></div>
+          <div class="nose"></div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-<div class="ui">
-  <h1>Confetti<br>Clicker</h1>
-  <div class="score" id="score">0</div>
-  <div class="subtitle">点我！爆彩纸屑！</div>
+  <div class="laser" id="laser"></div>
+
+  <div class="controls">
+    <div class="btn" id="feedBtn">🍗</div>
+    <div class="btn" id="resetBtn">🔄</div>
+  </div>
+
+  <div class="hint" id="hint">移动手指/鼠标逗猫猫～</div>
+
+  <div class="energy-bar">
+    <div class="energy-fill" id="energyFill"></div>
+  </div>
 </div>
 
-<div class="achieve" id="achieve"></div>
-
-<div class="hint">点击 / 轻触 屏幕任意位置</div>
-
 <script>
-// ------------------- Canvas Confetti -------------------
-const canvas = document.getElementById('c');
-const ctx = canvas.getContext('2d');
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+const cat = document.getElementById('cat');
+const catPos = document.getElementById('catPos');
+const laser = document.getElementById('laser');
+const feedBtn = document.getElementById('feedBtn');
+const resetBtn = document.getElementById('resetBtn');
+const energyFill = document.getElementById('energyFill');
+const hint = document.getElementById('hint');
 
-window.addEventListener('resize', () => {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-});
+let mouseX = window.innerWidth / 2;
+let mouseY = window.innerHeight / 2;
+let energy = 100;
+let isTired = false;
+let feedCount = 0;
 
-let particles = [];
+function updateLaser(e) {
+  const touch = e.touches ? e.touches[0] : e;
+  if (!touch) return;
 
-class Particle {
-  constructor(x, y) {
-    this.x = x;
-    this.y = y;
-    this.size = Math.random() * 8 + 4;
-    this.speedX = Math.random() * 6 - 3;
-    this.speedY = Math.random() * -12 - 8;
-    this.color = `hsl(${Math.random()*360}, 100%, 60%)`;
-    this.gravity = 0.15;
-    this.friction = 0.98;
-    this.alpha = 1;
-    this.rotation = Math.random() * Math.PI * 2;
-    this.rotSpeed = Math.random() * 0.1 - 0.05;
-  }
+  mouseX = touch.clientX;
+  mouseY = touch.clientY;
 
-  update() {
-    this.speedY += this.gravity;
-    this.speedX *= this.friction;
-    this.speedY *= this.friction;
-    this.x += this.speedX;
-    this.y += this.speedY;
-    this.rotation += this.rotSpeed;
-    this.alpha -= 0.008;
-  }
-
-  draw() {
-    ctx.save();
-    ctx.globalAlpha = this.alpha;
-    ctx.translate(this.x, this.y);
-    ctx.rotate(this.rotation);
-    ctx.fillStyle = this.color;
-    ctx.fillRect(-this.size/2, -this.size/2, this.size, this.size);
-    ctx.restore();
-  }
+  laser.style.left = mouseX + 'px';
+  laser.style.top  = mouseY + 'px';
 }
 
-function createConfetti(x, y, count = 80) {
-  for (let i = 0; i < count; i++) {
-    particles.push(new Particle(x, y));
-  }
-}
+function updateCat() {
+  // 边界限制 + 轻微随机偏移（更像真猫）
+  const targetX = Math.max(60, Math.min(window.innerWidth - 160, mouseX + (Math.random() * 40 - 20)));
+  const targetY = Math.max(40, Math.min(window.innerHeight - 200, mouseY + (Math.random() * 30 - 15)));
 
-function animate() {
-  ctx.fillStyle = 'rgba(15,15,35,0.12)';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  catPos.style.left = targetX + 'px';
+  catPos.style.top  = targetY + 'px';
 
-  particles = particles.filter(p => p.alpha > 0.01);
-  particles.forEach(p => {
-    p.update();
-    p.draw();
+  // 眼睛跟随
+  const eyes = document.querySelectorAll('.pupil');
+  eyes.forEach(eye => {
+    const dx = (mouseX - (parseFloat(catPos.style.left) + 110)) * 0.0008;
+    const dy = (mouseY - (parseFloat(catPos.style.top) + 80)) * 0.0008;
+    eye.style.transform = `translate(${dx*30}px, ${dy*30}px)`;
   });
-
-  requestAnimationFrame(animate);
 }
 
-animate();
+function updateEnergy() {
+  if (energy > 0) {
+    energy -= 0.08;
+    if (energy < 0) energy = 0;
+  }
 
-// ------------------- Click / Touch Logic -------------------
-let score = 0;
-const scoreEl = document.getElementById('score');
-const achieveEl = document.getElementById('achieve');
+  energyFill.style.width = energy + '%';
 
-const achievements = [
-  { count: 10,  text: "新手上路！10次啦～🎉" },
-  { count: 50,  text: "小有成就！50次！✨" },
-  { count: 100, text: "上瘾警告！100次！🔥" },
-  { count: 250, text: "你是认真的吗？！250次…😳" },
-  { count: 500, text: "彩纸屑之神！500次！🌟" },
-  { count: 1000,text: "……你赢了。1000次。👑" }
-];
-
-let shown = new Set();
-
-function showAchieve(text) {
-  achieveEl.textContent = text;
-  achieveEl.classList.add('show');
-  setTimeout(() => achieveEl.classList.remove('show'), 3000);
+  if (energy < 25 && !isTired) {
+    isTired = true;
+    cat.classList.add('tired');
+    hint.textContent = '猫猫累了…要喂点吃的哦～';
+  }
 }
 
-function handleClick(e) {
-  const x = e.clientX || (e.touches && e.touches[0].clientX);
-  const y = e.clientY || (e.touches && e.touches[0].clientY);
+function feed() {
+  if (energy < 100) {
+    energy = Math.min(100, energy + 35);
+    feedCount++;
+    
+    cat.style.transform = 'scale(1.12)';
+    setTimeout(() => cat.style.transform = 'scale(1)', 300);
 
-  score++;
-  scoreEl.textContent = score;
-
-  createConfetti(x, y, 60 + Math.floor(score / 50) * 10); // 越多越爽
-
-  // 检查成就
-  achievements.forEach(a => {
-    if (score >= a.count && !shown.has(a.count)) {
-      shown.add(a.count);
-      showAchieve(a.text);
+    if (feedCount % 3 === 0) {
+      hint.textContent = '猫猫超级开心！( •ω• )';
+      setTimeout(() => hint.textContent = '移动手指/鼠标逗猫猫～', 2000);
     }
-  });
+  }
 }
 
-window.addEventListener('click', handleClick);
-window.addEventListener('touchstart', handleClick, { passive: true });
+function reset() {
+  energy = 100;
+  isTired = false;
+  feedCount = 0;
+  cat.classList.remove('tired');
+  energyFill.style.width = '100%';
+  hint.textContent = '猫猫恢复元气啦！';
+}
+
+// 事件绑定
+window.addEventListener('mousemove', updateLaser);
+window.addEventListener('touchmove', updateLaser, { passive: true });
+window.addEventListener('touchstart', updateLaser, { passive: true });
+
+feedBtn.addEventListener('click', feed);
+feedBtn.addEventListener('touchstart', e => { e.preventDefault(); feed(); });
+
+resetBtn.addEventListener('click', reset);
+
+// 主循环
+setInterval(() => {
+  updateCat();
+  if (!isTired || energy > 10) {
+    updateEnergy();
+  }
+}, 80);
 </script>
 
 </body>
