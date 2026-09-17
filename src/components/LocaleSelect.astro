@@ -1,0 +1,26 @@
+---
+import { getRelativeLocaleUrl } from "astro:i18n";
+import { stripBase, stripLocale } from "@/utils/withBase";
+import config from "@/config";
+
+const locale = Astro.currentLocale ?? config.site.lang;
+// 单按钮 = 始终指向「另一种语言」的当前页
+const target = locale === "zh" ? "en" : "zh";
+const label = locale === "zh" ? "EN" : "中";
+const tip = locale === "zh" ? "切换到英文" : "Switch to Chinese";
+
+// Current path without base + locale prefix, e.g. "posts/slug" or "" for home.
+const relPath = stripBase(Astro.url.pathname);
+const pathWithoutLocale = stripLocale(relPath, locale).replace(/^\/+/, "");
+const href = getRelativeLocaleUrl(target, pathWithoutLocale);
+---
+
+<a
+  href={href}
+  hreflang={target}
+  title={tip}
+  aria-label={tip}
+  class="focus-outline rounded px-1.5 py-1 text-sm font-medium text-foreground/60 transition-colors hover:text-accent"
+>
+  {label}
+</a>

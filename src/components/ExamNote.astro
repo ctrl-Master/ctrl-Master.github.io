@@ -1,0 +1,1235 @@
+---
+const theory = "#theory";
+const prac = "#prac";
+const prac2 = "#prac2";
+---
+
+<div class="exam-note">
+  <nav class="toc">
+    <h2>目录（点击跳转）</h2>
+    <ul>
+      <li><a href="#s0">0 知识地图总览</a></li>
+      <li><a href="#s1">1 概率论四大分布</a></li>
+      <li><a href="#s2">2 专有技术 / 工具解耦库</a></li>
+      <li><a href="#s3">3 核心概念区分</a></li>
+      <li><a href="#s4">4 设计原则与人因</a></li>
+      <li><a href="#s5">5 数据全流程</a></li>
+      <li><a href="#s6">6 模型训练与评估</a></li>
+      <li><a href="#s7">7 易错否定考点汇总</a></li>
+      <li><a href="#s8">8 拓展知识库</a></li>
+      <li><a href="#prac">9 实操题1（流程/代码/设计）</a></li>
+      <li><a href="#prac2">10 实操题2（CSV/图像/算法流程）</a></li>
+      <li><a href="#orig">理论题原文对照</a></li>
+      <li><a href="#orig2">实操题原文对照</a></li>
+    </ul>
+  </nav>
+
+  <div class="parttab">
+    <a class="t-theory" href="#theory">📘 第一部分 · 理论题</a>
+    <a class="t-prac" href="#prac">实操题1</a>
+    <a class="t-prac" href="#prac2">实操题2</a>
+  </div>
+
+  <!-- ========== 理论题分区 ========== -->
+  <div class="partdivider theory" id="theory">
+    <span class="ptag">理论题</span>
+    <div>
+      <h2>第一部分 · 理论题（概念辨析与选择）</h2>
+      <div class="sub">知识地图、四大分布、技术/概念分库、设计原则、数据流程、训练评估、易错否定汇总、拓展知识库。</div>
+    </div>
+  </div>
+
+  <!-- ========== 0 知识地图 ========== -->
+  <section id="s0">
+    <h2>0 · 知识地图总览</h2>
+    <div class="desc">先建立"体系骨架"，再填细节。下面三张图把零散考点连成网络：AI 能力层级、模型生产链路、评估与训练回路。</div>
+
+    <div class="diagram">
+      <svg viewBox="0 0 640 150" width="640" height="150">
+        <rect x="20" y="55" width="180" height="42" rx="10" fill="#fbf9f5" stroke="#e85d04" stroke-width="2"/>
+        <text x="110" y="81" fill="#2d2a26" font-size="16" text-anchor="middle" font-family="sans-serif">人工智能 AI</text>
+        <rect x="230" y="55" width="180" height="42" rx="10" fill="#fbf9f5" stroke="#e85d04" stroke-width="2"/>
+        <text x="320" y="81" fill="#2d2a26" font-size="16" text-anchor="middle" font-family="sans-serif">机器学习 ML</text>
+        <rect x="440" y="55" width="180" height="42" rx="10" fill="#fbf9f5" stroke="#e85d04" stroke-width="2"/>
+        <text x="530" y="81" fill="#2d2a26" font-size="16" text-anchor="middle" font-family="sans-serif">深度学习 DL</text>
+        <line x1="200" y1="76" x2="230" y2="76" stroke="#e85d04" stroke-width="2"/>
+        <line x1="410" y1="76" x2="440" y2="76" stroke="#e85d04" stroke-width="2"/>
+        <text x="320" y="128" fill="#78716c" font-size="12.5" text-anchor="middle" font-family="sans-serif">包含关系：AI ⊃ ML ⊃ DL（逐级缩小的能力范围）</text>
+      </svg>
+    </div>
+
+    <div class="diagram">
+      <svg viewBox="0 0 700 90" width="700" height="90">
+        <defs><marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#e85d04"/></marker></defs>
+        <rect x="10" y="30" width="110" height="36" rx="8" fill="#fbf9f5" stroke="#854d0e"/><text x="65" y="53" fill="#2d2a26" font-size="13" text-anchor="middle">损失函数</text>
+        <rect x="150" y="30" width="110" height="36" rx="8" fill="#fbf9f5" stroke="#854d0e"/><text x="205" y="53" fill="#2d2a26" font-size="13" text-anchor="middle">计算误差</text>
+        <rect x="290" y="30" width="120" height="36" rx="8" fill="#fbf9f5" stroke="#854d0e"/><text x="350" y="53" fill="#2d2a26" font-size="13" text-anchor="middle">反向传播</text>
+        <rect x="440" y="30" width="130" height="36" rx="8" fill="#fbf9f5" stroke="#854d0e"/><text x="505" y="53" fill="#2d2a26" font-size="13" text-anchor="middle">更新模型参数</text>
+        <rect x="590" y="30" width="100" height="36" rx="8" fill="#fbf9f5" stroke="#166534"/><text x="640" y="53" fill="#166534" font-size="12.5" text-anchor="middle">准确率(仅评估)</text>
+        <line x1="120" y1="48" x2="148" y2="48" stroke="#e85d04" stroke-width="2" marker-end="url(#ar)"/>
+        <line x1="260" y1="48" x2="288" y2="48" stroke="#e85d04" stroke-width="2" marker-end="url(#ar)"/>
+        <line x1="410" y1="48" x2="438" y2="48" stroke="#e85d04" stroke-width="2" marker-end="url(#ar)"/>
+        <line x1="570" y1="48" x2="589" y2="48" stroke="#166534" stroke-width="2" stroke-dasharray="4 3"/>
+        <text x="350" y="82" fill="#78716c" font-size="12" text-anchor="middle">训练回路：前四项"更新权重"，准确率不参与更新，只评估好坏</text>
+      </svg>
+    </div>
+
+    <p class="relnote">提示：下文每个模块都带有"关联"说明，点击可跳到对应库。技术名（如 CTPN、CRNN）统一收在 <a href="#s2" style="color:var(--primary)">第 2 节工具解耦库</a>，概念辨析收在 <a href="#s3" style="color:var(--primary)">第 3 节</a>。</p>
+  </section>
+
+  <!-- ========== 1 概率四大分布 ========== -->
+  <section id="s1">
+    <h2>1 · 概率论四大分布（核心工具）</h2>
+    <div class="desc">这四种分布是概率论与数理统计的核心工具。概念看着分散，其实按"数据类型 → 解决问题"一一对应：独立随机事件的计数、有限重复试验的成功计数、连续数据的自然分布、实际观察与理论预期差异的假设检验。</div>
+
+    <div class="block">
+      <ul class="note">
+        <li><b>泊松分布（Poisson）</b>：单位时间随机事件发生次数。<span class="hl">适用：独立随机事件计数</span></li>
+        <li><b>二项分布</b>：n 次试验中的成功次数。<span class="hl">适用：有限重复试验的成功计数</span></li>
+        <li><b>正态分布（高斯分布）</b>：连续测量值。<span class="hl">适用：连续数据的自然分布</span></li>
+        <li><b>卡方分布</b>：统计检验。<span class="hl">适用：评估实际观察与理论预期差异的假设检验</span></li>
+      </ul>
+    </div>
+
+    <div class="diagram">
+      <svg viewBox="0 0 660 120" width="660" height="120">
+        <rect x="20" y="40" width="150" height="44" rx="9" fill="#fbf9f5" stroke="#854d0e"/><text x="95" y="67" fill="#2d2a26" font-size="13.5" text-anchor="middle">独立随机事件</text>
+        <rect x="190" y="40" width="150" height="44" rx="9" fill="#fbf9f5" stroke="#854d0e"/><text x="265" y="67" fill="#2d2a26" font-size="13.5" text-anchor="middle">有限重复试验</text>
+        <rect x="360" y="40" width="150" height="44" rx="9" fill="#fbf9f5" stroke="#854d0e"/><text x="435" y="67" fill="#2d2a26" font-size="13.5" text-anchor="middle">连续测量数据</text>
+        <rect x="530" y="40" width="120" height="44" rx="9" fill="#fbf9f5" stroke="#854d0e"/><text x="590" y="67" fill="#2d2a26" font-size="13.5" text-anchor="middle">观测vs预期</text>
+        <line x1="95" y1="84" x2="95" y2="100" stroke="#854d0e" stroke-width="2"/><line x1="265" y1="84" x2="265" y2="100" stroke="#854d0e" stroke-width="2"/><line x1="435" y1="84" x2="435" y2="100" stroke="#854d0e" stroke-width="2"/><line x1="590" y1="84" x2="590" y2="100" stroke="#854d0e" stroke-width="2"/>
+        <line x1="95" y1="100" x2="590" y2="100" stroke="#854d0e" stroke-width="2"/>
+        <text x="342" y="113" fill="#78716c" font-size="12" text-anchor="middle">四类问题 → 四种分布，按"数据类型→用途"连线记忆</text>
+      </svg>
+    </div>
+
+    <div style="text-align:center;margin-top:10px">
+      <span class="pill">📌 泊松：事件计数</span>
+      <span class="pill">📌 二项：成功次数</span>
+      <span class="pill">📌 正态：连续值</span>
+      <span class="pill">📌 卡方：检验差异</span>
+    </div>
+    <div class="expand">
+      <div class="et">拓展（来自整理论证）：</div>
+      记忆口诀——"稀发事件用泊松， fixed 次数用二项，测出来是连续用正态，要验真假用卡方"。考试若问"以下哪个分布用于假设检验"，选卡方；问"单位时间来电数"选泊松。四者难度：本组属 <span class="diff d-low">低</span> 直选型，但常与"属于/不属于某分布场景"组合成中难度题。
+      <a class="back" href="#s1">↩ 返回原文</a>
+    </div>
+  </section>
+
+  <!-- ========== 2 专有技术 / 工具解耦库 ========== -->
+  <section id="s2">
+    <h2>2 · 专有技术 / 工具解耦库</h2>
+    <div class="desc">把"会考的技术名/工具名"从概念里抽出来，按"是什么 + 用在哪 + 与谁关联"排列（不用卡片占位，便于日后追加新行）。带 ⛓ 的是关联线索。</div>
+
+    <div class="block lib">
+      <h3>神经网络 / 模型架构</h3>
+      <div class="row">
+        <div class="name">CNN<span class="tag">卷积神经网络</span></div>
+        <div class="body">与图像相关。<span class="rel">⛓ OCR 中负责"检测/找出位置"；常与 RNN 配对做 OCR。华为题常考"不属于图像相关的"选 CNN 无关项。</span></div>
+      </div>
+      <div class="row">
+        <div class="name">RNN<span class="tag">循环神经网络</span></div>
+        <div class="body">处理时序 / 语音文本；<span class="hl">LSTM 属于 RNN 变体</span>。<span class="rel">⛓ OCR 中负责"识别/提取"；语音识别模块常规组件。</span></div>
+      </div>
+      <div class="row">
+        <div class="name">CRNN<span class="tag">卷积循环神经网络</span></div>
+        <div class="body">OCR 文本识别经典模型，识别图片里单行不定长文本，<span class="hl">三段式结构（考试高频）</span>：①卷积层 CNN（图像）→ ②循环层 RNN / 双向 LSTM（标签分布）→ ③转录层（CTC 损失函数 把标签分布翻译成最终文本）。<span class="rel">⛓ 见下方关联图。</span></div>
+      </div>
+      <div class="row">
+        <div class="name">CTPN<span class="tag">OCR 文本检测经典模型</span></div>
+        <div class="body"><span class="hl">是一个深度神经网络，使用多个卷积层</span>。作用于文本检测 / 定位阶段。<span class="rel">⛓ 与 CRNN 分工：CTPN 检测定位，CRNN 识别。</span></div>
+      </div>
+      <div class="row">
+        <div class="name">GAN<span class="tag">生成对抗网络</span></div>
+        <div class="body">组件包含<span class="hl">判别器</span>。</div>
+      </div>
+      <div class="row">
+        <div class="name">Transformer<span class="tag">NLP 主流架构</span></div>
+        <div class="body">NLP 主流架构，是 BERT / GPT 等的底层网络。<span class="rel">⛓ 见第 3 节"深度学习技术"。</span></div>
+      </div>
+    </div>
+
+    <div class="block lib">
+      <h3>框架 / 工具库</h3>
+      <div class="row">
+        <div class="name">TensorFlow<span class="tag">训练框架</span></div>
+        <div class="body">支持分布式、TensorBoard 可视化、接口灵活；<span class="hl">支持 GPU，不局限机器学习</span>。加载已训练模型用 <span class="hl">tf.keras.models.load_model()</span>。<span class="rel">⛓ "如何加载模型"属高难度操作题，见第 8 节拓展。</span></div>
+      </div>
+      <div class="row">
+        <div class="name">PyTorch<span class="tag">训练框架</span></div>
+        <div class="body">负责自动微分的模块是 <span class="hl">autograd</span>。</div>
+      </div>
+      <div class="row">
+        <div class="name">Scikit-learn (sklearn)<span class="tag">传统机器学习库</span></div>
+        <div class="body"><span class="hl">非常适合表格结构化数据</span>。与 TensorFlow/PyTorch（深度学习框架）区分。</div>
+      </div>
+      <div class="row">
+        <div class="name">Pandas<span class="tag">数据分析</span></div>
+        <div class="body"><span class="hl">表格数据分析</span>。python 数组作为模型输入。</div>
+      </div>
+      <div class="row">
+        <div class="name">ART<span class="tag">对抗鲁棒性工具箱</span></div>
+        <div class="body">Adversarial Robustness Toolbox。</div>
+      </div>
+      <div class="row">
+        <div class="name">AutoML<span class="tag">自动机器学习</span></div>
+        <div class="body">可自动完成特征工程、模型选择、超参调优；<span class="negwrap"><span class="neg">并非完全不需要人工干预</span></span>。</div>
+      </div>
+    </div>
+
+    <div class="block lib">
+      <h3>视觉 / 检测 / 标注工具</h3>
+      <div class="row">
+        <div class="name">OCR<span class="tag">光学字符识别</span></div>
+        <div class="body">CNN 找位置/检测，RNN 识别/提取。<span class="rel">⛓ 见神经网络节。</span></div>
+      </div>
+      <div class="row">
+        <div class="name">YOLO<span class="tag">目标检测</span></div>
+        <div class="body"><span class="hl">目标检测（物体识别）经典算法</span>。</div>
+      </div>
+      <div class="row">
+        <div class="name">Attention-OCR<span class="tag">OCR 变体</span></div>
+        <div class="body"><span class="negwrap">优点<span class="neg">不包括增强记忆功能</span></span>。</div>
+      </div>
+      <div class="row">
+        <div class="name">ModelArts<span class="tag">华为云一站式 AI 开发平台</span></div>
+        <div class="body">图片目标标注默认<span class="hl">矩形框（长方形）</span>；AI 链路见下；数据管理模块含数据集管理/标注/处理（清洗、增强、校验），<span class="negwrap"><span class="neg">没有采集功能</span></span>；AI Gallery 是资产集市（模型/数据集/算子）；支持 PyTorch/TensorFlow/MindSpore、AutoML、端边云一键部署。</div>
+      </div>
+    </div>
+
+    <div class="block lib">
+      <h3>原型 / 设计工具</h3>
+      <div class="row">
+        <div class="name">InVision<span class="tag">原型工具</span></div>
+        <div class="body"><span class="hl">可交互原型、模拟产品体验</span>。</div>
+      </div>
+      <div class="row">
+        <div class="name">Adobe XD<span class="tag">原型工具</span></div>
+        <div class="body">原型设计。</div>
+      </div>
+    </div>
+
+    <div class="diagram">
+      <svg viewBox="0 0 700 170" width="700" height="170">
+        <defs><marker id="ar2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#e85d04"/></marker></defs>
+        <text x="350" y="20" fill="#e85d04" font-size="13.5" font-weight="700" text-anchor="middle" font-family="sans-serif">CRNN 三段式（OCR 文本识别）</text>
+        <rect x="30" y="50" width="180" height="50" rx="9" fill="#fbf9f5" stroke="#e85d04"/><text x="120" y="72" fill="#2d2a26" font-size="13" text-anchor="middle">① 卷积层 CNN</text><text x="120" y="90" fill="#78716c" font-size="11.5" text-anchor="middle">提取图像特征</text>
+        <rect x="260" y="50" width="180" height="50" rx="9" fill="#fbf9f5" stroke="#e85d04"/><text x="350" y="72" fill="#2d2a26" font-size="13" text-anchor="middle">② 循环层 RNN</text><text x="350" y="90" fill="#78716c" font-size="11.5" text-anchor="middle">双向LSTM 标签分布</text>
+        <rect x="490" y="50" width="180" height="50" rx="9" fill="#fbf9f5" stroke="#e85d04"/><text x="580" y="72" fill="#2d2a26" font-size="13" text-anchor="middle">③ 转录层 CTC</text><text x="580" y="90" fill="#78716c" font-size="11.5" text-anchor="middle">翻译为最终文本</text>
+        <line x1="210" y1="75" x2="258" y2="75" stroke="#e85d04" stroke-width="2" marker-end="url(#ar2)"/>
+        <line x1="440" y1="75" x2="488" y2="75" stroke="#e85d04" stroke-width="2" marker-end="url(#ar2)"/>
+        <text x="350" y="135" fill="#78716c" font-size="12" text-anchor="middle">分工对照：CTPN（检测定位）＋ CRNN（识别）＝ 完整 OCR 流水线</text>
+        <rect x="250" y="145" width="200" height="20" rx="6" fill="#fbf9f5" stroke="#d6cebe"/><text x="350" y="159" fill="#78716c" font-size="11" text-anchor="middle">CTPN 检测 → CRNN 识别</text>
+      </svg>
+    </div>
+  </section>
+
+  <!-- ========== 3 核心概念区分 ========== -->
+  <section id="s3">
+    <h2>3 · 核心概念区分（概念理解）</h2>
+    <div class="desc">把"长得像、容易混"的概念成对/成组辨析。否定表述已用红字标出。</div>
+
+    <div class="block">
+      <h3>分类 vs 回归 <span class="diff d-mid">中</span></h3>
+      <ul class="note">
+        <li><b>分类</b>：预测类别（离散值）。代表：决策树、随机森林、SVM、逻辑回归。</li>
+        <li><b>回归</b>：预测数值（连续值）。代表：线性回归。</li>
+      </ul>
+    </div>
+
+    <div class="block">
+      <h3>精确 / 召回 / 准确率 / F1 <span class="diff d-high">高</span></h3>
+      <ul class="note">
+        <li><b>召回</b>：真的里面抓多少（查全率，防漏）。</li>
+        <li><b>精确</b>：猜正的里面对多少（查准率，防误报）。</li>
+        <li><b>准确率</b>：全部样本猜对比例。</li>
+        <li><b>F1</b>：精确召回综合得分。</li>
+        <li>混淆矩阵维度：真实标签、预测标签（TP，以 T 为主）。</li>
+      </ul>
+      <div class="expand">
+        <div class="et">拓展（来自对话整理）：</div>
+        F1 是精确率 P 与召回率 R 的调和平均：F1 = 2PR/(P+R)。当考题问"综合得分"或"平衡精确与召回"即指 F1。该组是高频长题，建议配混淆矩阵手抄一遍。
+        <a class="back" href="#s3">↩ 返回原文</a>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>监督 / 无监督 / 强化学习 <span class="diff d-mid">中</span></h3>
+      <ul class="note">
+        <li><b>监督学习</b>：已有标注数据集，学习输入→标签映射。如逻辑回归（分类）、KNN 近邻、神经网络。分类（离散标签）/ 回归（连续数值）均属监督。</li>
+        <li><b>无监督学习</b>：无标签。聚类（把对象<span class="hl">集合分组</span>）、降维。K-means、谱聚类。</li>
+        <li><b>强化学习</b>：智能体交互环境，靠奖励信号学习策略。</li>
+      </ul>
+    </div>
+
+    <div class="block">
+      <h3>聚类算法归类（易出"属于/不属于"长题）<span class="diff d-high">高</span></h3>
+      <div class="tree">
+        <div class="lv1">无监督学习</div>
+        <div class="lv2 child">聚类算法（属于）：K-means、谱聚类、DBSCAN 等</div>
+        <div class="lv2 child">降维（属于无监督）</div>
+        <div class="lv1">不属于聚类 / 不属于无监督</div>
+        <div class="lv2 child"><span class="neg">K-means 不是调参方法</span>（它是模型算法）</div>
+        <div class="lv2 child"><span class="neg">决策树不是深度学习</span>，是传统机器学习</div>
+        <div class="lv2 child"><span class="neg">CNN 不属于</span>邀约机器人语音识别模块常规组成（见第 7 节）</div>
+      </div>
+      <div class="expand">
+        <div class="et">拓展（来自整理论证）：</div>
+        判定套路：看到"属于聚类算法"→ 找无监督分组类（K-means/谱聚类）；看到"不属于"→ 优先排除"调参方法""监督分类器""深度学习专属"。聚类常与降维并列考，记住两者都属无监督。
+        <a class="back" href="#s3">↩ 返回原文</a>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>特征选择三类 <span class="diff d-mid">中</span></h3>
+      <div class="tree">
+        <div class="lv1">特征选择</div>
+        <div class="lv2">过滤式 Filter</div>
+        <div class="lv2">包裹式 Wrapper</div>
+        <div class="lv2 child">嵌入式 Embedded</div>
+        <div class="lv3">决策树（例）</div>
+        <div class="lv3">随机森林（例）</div>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>降维算法辨析（LDA / PCA / ICA / 特征识别）<span class="diff d-high">高</span></h3>
+      <div class="negwrap" style="margin-bottom:10px"><span class="neg">LDA（线性判别分析）不属于"单纯寻找数据分布最优子空间、去除相关性"的无监督降维</span>——它是有监督，目标是让不同类别尽可能分开。</div>
+      <ul class="note">
+        <li><b>PCA 主成分分析（正确降维）</b>：对原始坐标轴旋转变换，找方差最大的新坐标轴（主成分），<span class="hl">降维并消除特征间相关性</span>，无监督；底层基于 SVD，随机 SVD 是其优化变种。</li>
+        <li><b>ICA 独立成分分析</b>：把混合信号拆成互相<span class="hl">独立</span>的源信号（独立比不相关条件更强）。</li>
+        <li><b>特征识别</b>：<span class="neg">不是降维算法</span>，只是识别特征的过程。</li>
+      </ul>
+    </div>
+
+    <div class="block">
+      <h3>预剪枝 vs 后剪枝 <span class="diff d-mid">中</span></h3>
+      <ul class="note">
+        <li><b>预剪枝</b>：树长到一半提前停止生长（边建边剪）。</li>
+        <li><b>后剪枝</b>：先生成完整大树，再从底部往上剪（建好再剪）。</li>
+        <li>剪枝作用：<span class="hl">降低过拟合，提升泛化能力</span>。</li>
+      </ul>
+    </div>
+
+    <div class="block">
+      <h3>关键词提取算法 <span class="diff d-mid">中</span></h3>
+      <div class="negwrap" style="margin-bottom:8px"><span class="neg">重点：SSA 不是关键词提取算法</span></div>
+      <ul class="note">
+        <li>常用：TF-IDF、TextRank、LDA（次要）。</li>
+      </ul>
+    </div>
+
+    <div class="block">
+      <h3>损失函数（分类 / 回归）<span class="diff d-high">高</span></h3>
+      <div class="negwrap" style="margin-bottom:8px">这块比较难理解，按"任务类型 → 损失"记：</div>
+      <ul class="note">
+        <li><b>回归（预测连续数字）</b>：MSE（L2 均方损失）、MAE（L1 平均绝对损失）。</li>
+        <li><b>分类（预测类别）</b>：交叉熵（深度学习分类最常用）、Hinge（SVM）、0-1 损失（理想分类损失，<span class="neg">无法直接优化</span>）。</li>
+      </ul>
+    </div>
+
+    <div class="block">
+      <h3>池化层 & 梯度消失 <span class="diff d-mid">中</span></h3>
+      <ul class="note">
+        <li>池化层作用：缩小特征图（减少参数）、降低计算量、一定程度防止过拟合。</li>
+        <li>梯度消失 → 靠 ReLU、残差网络、批量归一化 BN 解决。</li>
+        <li><span class="hl">Sigmoid 极易梯度消失</span>。</li>
+      </ul>
+    </div>
+
+    <div class="block">
+      <h3>语音识别模块组件（N-gram/RNN/ASRT/LSTM/CNN）<span class="diff d-high">高</span></h3>
+      <ul class="note">
+        <li><span class="hl">属于</span>：N-gram（语言模型，判断语句通顺）、RNN（序列建模）、ASRT（开源语音识别库）、LSTM（RNN 改进，时序建模）。</li>
+        <li><span class="negwrap"><span class="neg">CNN 不属于</span>邀约机器人语音识别模块常规组成</span>（多用于图像，少量语音应用但不常规）。</li>
+      </ul>
+    </div>
+
+    <div class="block">
+      <h3>深度学习技术（Word2Vec/Transformer/BERT/K-means/决策树）<span class="diff d-high">高</span></h3>
+      <ul class="note">
+        <li><span class="hl">属于深度学习</span>：Word2Vec（词向量）、Transformer（基础架构）、BERT（基于 Transformer 的预训练语言模型）。</li>
+        <li><span class="negwrap"><span class="neg">K-means 不属于</span>深度学习（它是无监督聚类）</span>；<span class="negwrap"><span class="neg">决策树不属于</span>深度学习（传统机器学习）</span>。</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ========== 4 设计原则与人因 ========== -->
+  <section id="s4">
+    <h2>4 · 设计原则与人因</h2>
+    <div class="desc">偏产品 / 交互 / 职业道德考点，多为直选。</div>
+
+    <div class="block">
+      <h3>高效性原则 <span class="diff d-low">低</span></h3>
+      <div class="kv"><span>目标：<b>减少操作步骤，提升操作效率</b></span></div>
+      <ul class="note">
+        <li>简洁：界面干净。</li>
+        <li>一致：逻辑统一。</li>
+        <li>容错：允许失误。</li>
+      </ul>
+    </div>
+
+    <div class="block">
+      <h3>人因 / 评估 / 其他 <span class="diff d-low">低</span></h3>
+      <ul class="note">
+        <li><b>Fitts 定律（菲茨定律）</b>：用于预测用户的<span class="hl">点击速度</span>。</li>
+        <li><b>启发式评估</b>：由专家根据预设可用性原则对界面快速评估，<span class="hl">不需要用户参与</span>。</li>
+        <li><b>主观审核</b> = <span class="hl">用户主观感受</span>。</li>
+        <li><b>智能客服系统中 NLP 主要作用</b>：<span class="hl">提供多语言支持</span>。</li>
+        <li>新职业道德核心理念：<span class="hl">服务意识</span>；增强职业道德可<span class="hl">协调员工关系、增强企业内部凝聚力</span>。</li>
+        <li>加班费：<span class="hl">150%</span>。</li>
+        <li>接入网络可<span class="hl">多级</span>联接。</li>
+        <li>通配符 <span class="hl">* = 任意多个字符</span>。</li>
+        <li>数字、数据属于<span class="hl">数学语言</span>。</li>
+        <li>文本情感分析在自然语言处理领域是一个研究<span class="hl">分支</span>。</li>
+        <li>华为相关题目：<span class="hl">都是芯片</span>；选择"无关的"一般选界面友好度 / 精美度（有关的选这个）。</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ========== 5 数据全流程 ========== -->
+  <section id="s5">
+    <h2>5 · 数据全流程（预处理 → 标注 → 特征）</h2>
+    <div class="desc">数据生命周期相关考点，按"清洗→变换→标注→特征"串起来。</div>
+
+    <div class="block">
+      <h3>数据预处理与建模任务 <span class="diff d-mid">中</span></h3>
+      <div class="negwrap" style="margin-bottom:8px"><span class="neg">数据建模任务不包括"数据预处理"本身</span>——建模任务是分类 / 回归 / 聚类。</div>
+      <ul class="note">
+        <li><b>数据预处理</b>：清洗、集成、变换、规约。</li>
+        <li><b>数据清洗</b>：<span class="hl">提升数据质量</span>。</li>
+        <li><b>数据变换</b>：<span class="hl">将数据转变为符合要求的形式</span>。</li>
+        <li><b>数据拆解</b>：<span class="hl">发现数据中的隐藏模式和趋势</span>。</li>
+      </ul>
+    </div>
+
+    <div class="block">
+      <h3>缺失值处理 <span class="diff d-mid">中</span></h3>
+      <ul class="note">
+        <li>删除、插补、变换 / 新增缺失标记。</li>
+        <li>聚类场景的<span class="hl">同类均值插补</span>（无监督填补）。</li>
+      </ul>
+    </div>
+
+    <div class="block">
+      <h3>数据标注 <span class="diff d-mid">中</span></h3>
+      <ul class="note">
+        <li>按标注对象划分：<span class="hl">图像、文本、语音</span>三类。</li>
+        <li><b>半结构化标注</b> = <span class="hl">标签值（结构化）＋ 标签域（非结构化）</span>。</li>
+        <li><b>机器标注算法</b>对高层语义对象识别和<span class="hl">提取</span>效果不好。</li>
+        <li>文本数据标注需要遵循一定质量标准 → <span class="negwrap"><span class="neg">错误（应为"需要遵循"）</span></span>。</li>
+      </ul>
+    </div>
+
+    <div class="block">
+      <h3>结构化 vs 非结构化 <span class="diff d-low">低</span></h3>
+      <ul class="note">
+        <li><b>非结构化数据</b>：图片、文本、音视频。适用手段：NLP、CV、神经网络、聚类（向量化后）、计算机视觉。</li>
+        <li><b>决策树</b>：擅长结构化表格数据。</li>
+      </ul>
+    </div>
+
+    <div class="block">
+      <h3>易混辨析 <span class="diff d-mid">中</span></h3>
+      <ul class="note">
+        <li><span class="negwrap">数据平滑 <span class="neg">≠ 去除噪声</span></span>（平滑是降噪的一种手段，但不等同"去除噪声"这一表述在题中作否定考）。</li>
+        <li>处理分类数据类别不平衡：<span class="hl">使用 SMOTE（合成少数类过采样技术）</span>。</li>
+        <li>管理者识别需求要利用信息支持评审过程输入输出 → <span class="negwrap"><span class="neg">错误</span></span>（识别需求是挖掘业务目标）。</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ========== 6 模型训练与评估 ========== -->
+  <section id="s6">
+    <h2>6 · 模型训练与评估</h2>
+    <div class="desc">训练回路、调参、过拟合、交叉验证等。</div>
+
+    <div class="block">
+      <h3>训练回路 <span class="diff d-mid">中</span></h3>
+      <div class="kv"><span>损失函数 → 计算误差 → 反向传播 → 更新模型参数</span></div>
+      <div class="negwrap" style="margin-top:6px"><span class="neg">准确率只用来评估模型好坏，不更新权重</span></div>
+    </div>
+
+    <div class="block">
+      <h3>超参数寻优（调参）<span class="diff d-mid">中</span></h3>
+      <ul class="note">
+        <li>方法：网格搜索、随机搜索、贝叶斯优化。</li>
+        <li><span class="negwrap">K-means、KNN 是模型算法，<span class="neg">不是调参方法</span></span>。</li>
+      </ul>
+    </div>
+
+    <div class="block">
+      <h3>缓解过拟合（按时间线）<span class="diff d-mid">中</span></h3>
+      <div class="diagram">
+        <svg viewBox="0 0 680 90" width="680" height="90">
+          <defs><marker id="ar3" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#166534"/></marker></defs>
+          <rect x="20" y="30" width="200" height="38" rx="8" fill="#fbf9f5" stroke="#166534"/><text x="120" y="53" fill="#2d2a26" font-size="12.5" text-anchor="middle">训练之前：扩充数据集</text>
+          <rect x="240" y="30" width="200" height="38" rx="8" fill="#fbf9f5" stroke="#166534"/><text x="340" y="53" fill="#2d2a26" font-size="12.5" text-anchor="middle">数据增强 / 早停 / 降复杂度</text>
+          <rect x="460" y="30" width="200" height="38" rx="8" fill="#fbf9f5" stroke="#166534"/><text x="560" y="53" fill="#2d2a26" font-size="12.5" text-anchor="middle">训练中：Dropout / BN / L1L2</text>
+          <line x1="220" y1="49" x2="238" y2="49" stroke="#166534" stroke-width="2" marker-end="url(#ar3)"/>
+          <line x1="440" y1="49" x2="458" y2="49" stroke="#166534" stroke-width="2" marker-end="url(#ar3)"/>
+          <text x="340" y="82" fill="#78716c" font-size="12" text-anchor="middle">学习率：主要加快模型训练速度（非直接防过拟合）</text>
+        </svg>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>K 折交叉验证 & 点云 & 模型评价 <span class="diff d-low">低</span></h3>
+      <ul class="note">
+        <li><b>K 折交叉验证两大作用</b>：评估模型性能、选择最优模型。</li>
+        <li><b>点云基础信息</b>：<span class="hl">三维坐标、颜色、反射强度</span>；<span class="negwrap">纹理 / 距离 <span class="neg">不是</span>点云基础信息</span>。</li>
+        <li><b>模型评价流程</b>：产出评价结果 → 复核重审 → 确定后续方案。</li>
+      </ul>
+    </div>
+
+    <div class="block">
+      <h3>优化器 / 系统设计 / 评估指标 <span class="diff d-mid">中</span></h3>
+      <ul class="note">
+        <li><b>AdaGrad</b>：累积梯度 → 分母变大 → <span class="hl">学习率持续减小</span>。</li>
+        <li><b>AI 智能系统设计顺序</b>：首先确认数据 → 业务需求 → 系统架构 → 算法开发 → UI 交互。</li>
+        <li><b>mAP</b>：平均精度均值（mean Average Precision）。</li>
+        <li><b>决策树叶节点</b>：<span class="hl">决策的结果</span>。</li>
+        <li><b>全连接神经网络</b>：是神经网络模型中的一种。</li>
+      </ul>
+    </div>
+
+    <div class="block">
+      <h3>流程优化 / 业务分析风险（低难度直选题）<span class="diff d-low">低</span></h3>
+      <ul class="note">
+        <li>流程优化方式<span class="negwrap"><span class="neg">不包括配套方案设计</span></span>。</li>
+        <li>以下哪项<span class="hl">不是</span>业务分析阶段需要识别的风险：<span class="hl">模型过拟合风险（属于模型训练阶段才出现的算法风险）</span>。</li>
+      </ul>
+      <div class="expand">
+        <div class="et">拓展（来自整理论证）：</div>
+        业务分析阶段识别的是"业务侧风险"（需求偏差、数据可得性、合规等）；模型过拟合是"训练/算法阶段"才暴露的风险，故不在业务分析清单内。此题为典型直选低难度。
+        <a class="back" href="#s6">↩ 返回原文</a>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>华为 ModelArts 完整 AI 链路 <span class="diff d-mid">中</span></h3>
+      <div class="diagram">
+        <svg viewBox="0 0 720 70" width="720" height="70">
+          <defs><marker id="ar4" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#e85d04"/></marker></defs>
+          <rect x="10" y="22" width="120" height="32" rx="7" fill="#fbf9f5" stroke="#e85d04"/><text x="70" y="42" fill="#2d2a26" font-size="12" text-anchor="middle">数据管理</text>
+          <rect x="150" y="22" width="120" height="32" rx="7" fill="#fbf9f5" stroke="#e85d04"/><text x="210" y="42" fill="#2d2a26" font-size="12" text-anchor="middle">算法开发</text>
+          <rect x="290" y="22" width="120" height="32" rx="7" fill="#fbf9f5" stroke="#e85d04"/><text x="350" y="42" fill="#2d2a26" font-size="12" text-anchor="middle">模型训练</text>
+          <rect x="430" y="22" width="120" height="32" rx="7" fill="#fbf9f5" stroke="#e85d04"/><text x="490" y="42" fill="#2d2a26" font-size="12" text-anchor="middle">模型管理</text>
+          <rect x="570" y="22" width="120" height="32" rx="7" fill="#fbf9f5" stroke="#e85d04"/><text x="630" y="42" fill="#2d2a26" font-size="12" text-anchor="middle">部署上线</text>
+          <line x1="130" y1="38" x2="148" y2="38" stroke="#e85d04" stroke-width="2" marker-end="url(#ar4)"/>
+          <line x1="270" y1="38" x2="288" y2="38" stroke="#e85d04" stroke-width="2" marker-end="url(#ar4)"/>
+          <line x1="410" y1="38" x2="428" y2="38" stroke="#e85d04" stroke-width="2" marker-end="url(#ar4)"/>
+          <line x1="550" y1="38" x2="568" y2="38" stroke="#e85d04" stroke-width="2" marker-end="url(#ar4)"/>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 7 易错否定汇总 ========== -->
+  <section id="s7">
+    <h2>7 · 易错否定考点汇总（红字重点背）</h2>
+    <div class="desc">把所有"不是 / 不属于 / 不包括 / 不等于 / 不更新"集中，考前一眼扫。</div>
+    <div class="block">
+      <ul class="note">
+        <li><span class="neg">SSA 不是关键词提取算法</span>（TF-IDF / TextRank / LDA 才是）。</li>
+        <li><span class="neg">K-means、KNN 不是调参方法</span>（是模型算法）。</li>
+        <li><span class="neg">准确率不更新权重</span>，只评估模型好坏。</li>
+        <li><span class="neg">CNN 不属于</span>语音识别模块常规组成。</li>
+        <li><span class="neg">K-means 不属于深度学习</span>；<span class="neg">决策树不属于深度学习</span>。</li>
+        <li><span class="neg">LDA（线性判别分析）不是无监督去相关降维</span>（是有监督分类降维）。</li>
+        <li><span class="neg">特征识别不是降维算法</span>。</li>
+        <li><span class="neg">AutoML 并非完全不需要人工干预</span>。</li>
+        <li><span class="neg">数据平滑 ≠ 去除噪声</span>。</li>
+        <li><span class="neg">模型过拟合风险不属于业务分析阶段</span>（属模型训练阶段）。</li>
+        <li><span class="neg">流程优化不包括配套方案设计</span>。</li>
+        <li><span class="neg">Attention-OCR 优点不包括增强记忆功能</span>。</li>
+        <li><span class="neg">ModelArts 数据管理模块没有采集功能</span>。</li>
+        <li><span class="neg">文本数据标注需要遵循质量标准（原题说"不需要"是错误的）</span>。</li>
+        <li><span class="neg">管理者识别需求不是"利用信息支持评审输入输出"（应为挖掘业务目标）</span>。</li>
+        <li><span class="neg">纹理 / 距离不是点云基础信息</span>（基础是三维坐标/颜色/反射强度）。</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ========== 8 拓展知识库 ========== -->
+  <section id="s8">
+    <h2>8 · 拓展知识库（可继续追加）</h2>
+    <div class="desc">以下为整理时生成的说明，对应前文的"拓展"块。后续对话中新增的内容可继续往这里加，并保留"↩ 返回原文"链接。</div>
+
+    <div class="block">
+      <h3>① 概率分布如何串联记忆</h3>
+      <p>四类分布覆盖"计数→试验→连续→检验"全谱。记忆锚点：泊松（事件数）、二项（成功数）、正态（测量值）、卡方（验差异）。考试若以"属于/不属于某场景"出题，先判数据类型再选分布。</p>
+    </div>
+    <div class="block">
+      <h3>② 加载 TensorFlow 模型（操作题）</h3>
+      <p>使用 <code>tf.keras.models.load_model()</code> 加载已训练模型——这是"方法类"高难度操作考点，区别于"模型算法"类考点。注意 load 是"加载"动作，不与 K-means / 调参方法混淆。</p>
+    </div>
+    <div class="block">
+      <h3>③ PCA 与 SVD 关系</h3>
+      <p>PCA 核心是对协方差矩阵做特征值分解，等价于对数据中心化后的矩阵做奇异值分解（SVD）；随机 SVD 是大矩阵的优化变种，用于加速。记住：PCA 既降维又去相关，且是无监督。</p>
+    </div>
+    <div class="block">
+      <h3>④ CRNN 与 CTPN 的 OCR 分工</h3>
+      <p>CTPN 负责"在哪里"（文本检测/定位，多卷积层）；CRNN 负责"是什么"（文本识别，三段式 CNN→RNN→CTC）。二者拼成工业级 OCR 流水线。CSDN 等资料常以此作高频例题。</p>
+    </div>
+    <div class="block">
+      <h3>⑤ 监督/无监督/强化 速判</h3>
+      <p>有标注→监督（分类/回归）；无标注找结构→无监督（聚类/降维）；与环境交互拿奖励→强化。K-means、谱聚类、PCA 均属无监督。</p>
+    </div>
+    <p style="color:var(--text-muted);font-size:12.5px">（本库将随后续对话持续追加，每条对应正文拓展块可点击返回。）</p>
+  </section>
+
+  <!-- ========== 实操题分区 ========== -->
+  <div class="partdivider prac" id="prac">
+    <span class="ptag">实操题</span>
+    <div>
+      <h2>实操题1（业务流程 / 代码 / 系统设计）</h2>
+      <div class="sub">以下整理自 Word 试卷《实操题答案汇总》：流程设计、流程优化、模型导入与评估代码、训练集不一致排查、培训与指导。</div>
+    </div>
+  </div>
+
+  <section id="s9" class="prac">
+    <h2>9 · 实操题详解</h2>
+    <div class="desc">实操侧重"动手 + 设计 + 排错"，与前面的选择题概念辨析互补。代码题与第 2/8 节"加载模型"知识点呼应。</div>
+
+    <div class="block">
+      <h3>① 业务流程设计 · 图像数据采集流程设计 <span class="diff d-mid">中</span></h3>
+      <ul class="note">
+        <li><b>一、确定采集目标</b>：道路地面标线。</li>
+        <li><b>二、确定采集方法</b>：向相关部门申请数据；爬取数据（需遵守相关法律法规）；自行采集（需向相关部门报批）。</li>
+        <li><b>三、数据存储</b>：将数据存储在网盘或硬盘等。</li>
+      </ul>
+    </div>
+
+    <div class="block">
+      <h3>② 业务流程优化 · 数据审核流程优化 <span class="diff d-mid">中</span></h3>
+      <div class="negwrap" style="margin-bottom:8px">原方案问题：<span class="neg">不能安排原标注人员审核</span>；<span class="neg">数据量太大不能全部全样审核</span>。</div>
+      <ul class="note">
+        <li><b>原方案</b>：步骤(1) 原标注员全样审核，合格通过；步骤(2) 不合格则返工后重新执行(1)。</li>
+        <li><b>优化方案</b></li>
+        <li><b>步骤(1)</b> <span class="hl">交叉抽样审核</span>；</li>
+        <li><b>步骤(2)</b> 合格则抽样数减半，不合格返工且抽样数翻倍，回到步骤1；</li>
+        <li><b>步骤(3)</b> 合格则审核通过，不合格返工且翻倍回到步骤1。</li>
+      </ul>
+      <div class="expand">
+        <div class="et">拓展（流程优化思路）：</div>
+        核心是把"全样审核"改为"交叉抽样 + 动态增减样本量"的闭环，既规避原标注员自评偏差，又用翻倍/减半机制控制质量与成本。与第 6 节"流程优化方式不包括配套方案设计"呼应。
+        <a class="back" href="#s9">↩ 返回原文</a>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>③ 智能训练 a · 数据清洗规范 <span class="diff d-low">低</span></h3>
+      <ul class="note">
+        <li>清除<span class="hl">错误数据</span></li>
+        <li>清理<span class="hl">模糊数据</span></li>
+        <li>清除<span class="hl">重复数据</span></li>
+        <li>数据<span class="hl">格式要统一</span></li>
+        <li>数据<span class="hl">命名要统一</span></li>
+      </ul>
+    </div>
+
+    <div class="block">
+      <h3>④ 智能训练 b · 模型导入与算法评估（代码）<span class="diff d-high">高</span></h3>
+      <div class="code"><span class="cm"># 模型导入</span>
+model = tf.keras.models.load_model(<span class="kw">'znxl005.h5'</span>)
+
+<span class="cm"># 算法评估</span>
+model.evaluate(test_image, test_label)
+
+<span class="cm"># 运行终端打印出的日志：</span>
+<span class="cm"># 313/313 [==============================] - 6s 20ms/step - loss: 0.6782 - acc: 0.8139</span>
+<span class="cm"># 返回的数据列表：</span>
+<span class="cm"># [0.6782490611076355, 0.8138999938964844]</span></div>
+      <div class="relnote">⛓ 与第 2 节 TensorFlow「<span class="hl">tf.keras.models.load_model()</span>」、第 8 节拓展②（加载模型操作题）直接呼应——本题就是该考点的实操落地。</div>
+    </div>
+
+    <div class="block">
+      <h3>⑤ 算法评估答案填空 <span class="diff d-low">低</span></h3>
+      <ul class="note">
+        <li>当前模型的分类数：<span class="hl">10 类</span></li>
+        <li>算法测试得到当前模型的 loss（损失）：<span class="hl">0.6782</span></li>
+        <li>当前模型 acc（准确率）：<span class="hl">0.8139</span>（约 81.4%）</li>
+      </ul>
+      <div class="relnote">acc 0.8139 对应日志 - acc: 0.8139；与第 3 节"准确率"概念一致。</div>
+    </div>
+
+    <div class="block">
+      <h3>⑥ 智能系统设计 a · 训练集与验证集不一致 <span class="diff d-high">高</span></h3>
+      <div class="kv"><span>现象原因（至少写两个）：</span></div>
+      <ul class="note">
+        <li>数据模型<span class="hl">过于复杂</span></li>
+        <li>训练数据<span class="hl">不够</span></li>
+        <li>训练数据<span class="hl">错误</span></li>
+      </ul>
+      <div class="kv" style="margin-top:6px"><span>优化方案（至少写三种）：</span></div>
+      <ul class="note">
+        <li>降低数据模型复杂程度</li>
+        <li>增加训练数据</li>
+        <li>进行数据清洗：删除错误数据、处理缺失值、处理异常值、数据格式转换、数据标准化、去噪</li>
+      </ul>
+      <div class="expand">
+        <div class="et">拓展（排错思路）：</div>
+        训练/验证集表现不一致（过拟合或数据分布偏移）优先从"模型复杂度 + 数据量与质量"两端入手；数据清洗动作与第 5 节"缺失值处理/数据清洗"一致。
+        <a class="back" href="#s9">↩ 返回原文</a>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>⑦ 人机交互 b · 模型导入与预测代码逻辑 <span class="diff d-high">高</span></h3>
+      <div class="code"><span class="cm"># 3 模型导入</span>
+model = tf.keras.models.load_model(<span class="kw">'znxtsj005.h5'</span>)
+
+<span class="cm"># 4 设计预测 predict_fun() 函数</span>
+def predict_fun(img):
+    img = tf.expand_dims(img, 0)
+    return model.predict(img)
+
+<span class="cm"># 5 用 predict_fun() 预测指定的图片</span>
+y1 = predict_fun(test_image[11])
+print(class_label[np.argmax(y1)])</div>
+      <div class="relnote">⛓ <span class="hl">tf.expand_dims(img,0)</span> 增加批维度；<span class="hl">np.argmax(y1)</span> 取最大概率类别索引——典型推理代码套路，面试/实操高频。</div>
+    </div>
+
+    <div class="block">
+      <h3>⑧ 试题 4 · 培训与指导 <span class="diff d-low">低</span></h3>
+      <ul class="note">
+        <li><b>a) 培训流程排序（1 分）</b>：顺序为 <span class="hl">③ ⑤ ④ ① ②</span>
+          <div class="relnote" style="text-align:left;margin-top:2px">对应：③ 边框标注概论 → ⑤ 边框标注工具介绍 → ④ 边框标注质量标准 → ① 边框标注演示 → ② 边框标注实战</div></li>
+        <li><b>b) 指导反馈（4 分）· 数据集存在的问题</b>：图片不清晰、图片重复、图片格式错误、采集错误数据。</li>
+      </ul>
+    </div>
+
+    <details class="orig" id="orig2">
+      <summary>实操题原文对照（浅色，仅作校对，不影响阅读）</summary>
+      <div class="origbox">实操题答案汇总
+a 业务流程设计
+第一题：图像数据采集流程设计
+一、确定采集目标： 道路地面标线
+二、确定采集方法：
+向相关部门申请数据；
+爬取数据，但需要遵守相关法律法规；
+自行采集，但需要向相关部门报批。
+三、数据存储： 将数据存储在网盘或者硬盘等。
+
+b 业务流程优化
+第二题：数据审核流程优化
+原方案：
+步骤（1）：安排原标注员对数据标注结果进行全样审核，当数据合格时，审核通过；
+步骤（2）：当数据不合格时，让标注员返工，之后重新执行步骤（1）。
+存在问题：
+不能安排原标注人员进行审核
+数据量太大不能全部都是全样审核
+优化方案：
+步骤（1）：交叉抽样审核
+步骤（2）：合格则抽样数减半，不合格返工，抽样数量翻倍并重新回到步骤 1
+步骤（3）：合格则审核通过，不合格返工，抽样数量翻倍并重新回到步骤 1
+
+智能训练 a
+数据清洗规范：
+清除错误数据
+清理模糊数据
+清除重复数据
+数据格式要统一
+数据命名要统一
+
+智能训练 b
+# 模型导入
+model = tf.keras.models.load_model('znxl005.h5')
+# 算法评估
+model.evaluate(test_image, test_label)
+# 运行终端打印出的日志：
+# 313/313 [==============================] - 6s 20ms/step - loss: 0.6782 - acc: 0.8139
+# 返回的数据列表：
+# [0.6782490611076355, 0.8138999938964844]
+
+算法评估答案填空：
+当前模型的分类数为： 10 类
+算法测试得到当前模型的 loss（损失）： 0.6782
+当前模型 acc（准确率）： 0.8139
+
+智能系统设计 a
+训练集与验证集不一致：
+现象原因（至少写两个原因）：
+数据模型过于复杂
+训练数据不够
+训练数据错误
+优化方案（至少写三种方案）：
+降低数据模型复杂程度
+增加训练数据
+进行数据清洗：删除错误数据，处理缺失值，处理异常值，数据格式转换，数据要标准化，去噪
+
+人机交互 b
+模型导入与预测代码逻辑：
+# 3 模型导入
+model = tf.keras.models.load_model('znxtsj005.h5')
+# 4 设计预测 predict_fun()函数
+def predict_fun(img):
+    img = tf.expand_dims(img,0)
+    return model.predict(img)
+# 5 用 predict_fun()函数预测指定的图片
+y1 = predict_fun(test_image[11])
+print(class_label[np.argmax(y1)])
+
+试题 4：培训与指导
+a) 培训流程排序（1 分）：
+培训流程顺序为： ③ ⑤ ④ ① ②
+(对应顺序：③边框标注概论 -> ⑤边框标注工具介绍 -> ④边框标注质量标准 -> ①边框标注演示 -> ②边框标注实战)
+b) 指导反馈（4 分）：
+数据集存在的问题反馈：
+图片不清晰
+图片重复
+图片格式错误
+采集错误数据</div>
+    </details>
+  </section>
+
+  <!-- ========== 实操题2 分区 ========== -->
+  <div class="partdivider prac" id="prac2">
+    <span class="ptag">实操题</span>
+    <div>
+      <h2>实操题2（CSV 读取清洗 / 图像操作 / 算法测试流程）</h2>
+      <div class="sub">围绕评论数据 comment.csv 的读取、清洗、统计与图像基础处理，以及算法测试标准流程图。</div>
+    </div>
+  </div>
+
+  <section id="s10" class="prac">
+    <h2>10 · 实操题2 详解</h2>
+    <div class="desc">本组侧重 pandas 表格操作与 OpenCV 图像基础，与第 2 节「加载/处理数据」、第 6 节「数据清洗」知识点呼应。</div>
+
+    <div class="block">
+      <h3>① 读取与操作 CSV 文件（pandas）<span class="diff d-mid">中</span></h3>
+      <div class="code"><span class="cm"># 读取 csv 文件</span>
+comment_df = <span class="fn">pd.read_csv</span>(<span class="kw">'comment.csv'</span>)
+
+<span class="cm"># 删除【评论】列为空的行</span>
+comment_df = comment_df.<span class="fn">dropna</span>(subset=[<span class="kw">'评论'</span>])
+
+<span class="cm"># 3. 保存新表格，命名为 "2.1-comment_cleaned.csv"</span>
+comment_cleaned_df.<span class="fn">to_csv</span>(<span class="kw">'./2.1-comment_cleaned.csv'</span>, index=<span class="kw">False</span>)</div>
+      <div class="relnote">⛓ 核心方法：<span class="hl">pd.read_csv()</span> 读入、<span class="hl">dropna(subset=...)</span> 按列丢弃空值、<span class="hl">to_csv(index=False)</span> 写出且不保留行索引。</div>
+    </div>
+
+    <div class="block">
+      <h3>② 图像读取与处理（OpenCV / cv2）<span class="diff d-mid">中</span></h3>
+      <div class="code"><span class="cm"># 读取图片</span>
+img = <span class="fn">cv2.imread</span>(<span class="kw">'input.jpg'</span>)
+
+<span class="cm"># 翻转图片（flipCode: 0 上下 / 1 左右 / -1 同时）</span>
+flipped = <span class="fn">cv2.flip</span>(img, <span class="kw">1</span>)
+
+<span class="cm"># 放大图片（目标尺寸 (width, height)）</span>
+resized = <span class="fn">cv2.resize</span>(img, (<span class="kw">800</span>, <span class="kw">600</span>))
+
+<span class="cm"># 输出（保存）图片</span>
+<span class="fn">cv2.imwrite</span>(<span class="kw">'output.jpg'</span>, resized)</div>
+      <div class="relnote">⛓ 四个高频方法：<span class="hl">cv2.imread</span> 读、<span class="hl">cv2.flip</span> 翻转、<span class="hl">cv2.resize</span> 缩放、<span class="hl">cv2.imwrite</span> 写回。</div>
+    </div>
+
+    <div class="block">
+      <h3>③ 数据填充 / 统计 / 清洗（pandas）<span class="diff d-low">低</span></h3>
+      <ul class="note">
+        <li><b>填充空值</b>：conment_df['地区'].<span class="fn">fillna</span>('未知')</li>
+        <li><b>求平均值</b>：conment_df['评分'].<span class="fn">mean</span>()</li>
+        <li><b>地区等于海外</b>：conment_df['地区'] = <span class="kw">'海外'</span></li>
+        <li><b>删除数据中的 &amp; 符号</b>：conment_df['地区'] = conment_df['地区'].<span class="fn">str.replace</span>('&amp;','')</li>
+        <li><b>增加数据（追加行）</b>：conment_df = conment_df.<span class="fn">append</span>(xxx)</li>
+        <li><b>个别空值填写 M</b>：conment_df['列名'].<span class="fn">fillna</span>('M')</li>
+      </ul>
+      <div class="relnote">⛓ <span class="hl">str.replace()</span> 需经 <span class="hl">.str</span> 访问器（Series 字符串方法）；<span class="hl">append</span> 向 DataFrame 末尾追加一行/多行。</div>
+    </div>
+
+    <div class="block">
+      <h3>④ 算法测试流程图 <span class="diff d-mid">中</span></h3>
+      <div class="flow">
+        <div class="step"><span class="num">④</span> 明确算法测试标准</div>
+        <div class="arr">↓</div>
+        <div class="step"><span class="num">⑤</span> 算法测试集数据准备</div>
+        <div class="arr">↓</div>
+        <div class="step"><span class="num">⑥</span> 挑选算法模型评估指标</div>
+        <div class="arr">↓</div>
+        <div class="step"><span class="num">⑦</span> 算法功能测试</div>
+        <div class="arr">↓</div>
+        <div class="step"><span class="num">②</span> 算法性能测试</div>
+        <div class="arr">↓</div>
+        <div class="step"><span class="num">③</span> 算法指标结果分析</div>
+        <div class="arr">↓</div>
+        <div class="step"><span class="num">①</span> 编写算法测试报告</div>
+      </div>
+      <div class="relnote">按测试推进顺序：先定标准 → 备数据 → 选指标 → 功能测试 → 性能测试 → 结果分析 → 编写报告（圆圈序号为原题标号）。</div>
+    </div>
+
+  </section>
+
+  <!-- ========== 原文对照（理论题） ========== -->
+  <details class="orig" id="orig">
+    <summary>理论题原文对照（浅色，仅作校对，不影响阅读）</summary>
+    <div class="origbox">泊松分布（Poisson Distribution）：单位时间随机事件发生次数
+二项：n 次试验成功次数；正态（高斯）：连续测量值；卡方：统计检验
+=========================
+减少操作步骤，提升操作效率：【高效性原则】
+简洁：界面干净；一致：逻辑统一；容错：允许失误
+=========================
+HSV 彩色空间：H =【 色相】，S = 饱和度，V = 亮度
+=========================
+关键词提取常用：【重点：SSA 不是关键词提取算法】。
+**次要：TF-IDF、TextRank、LDA**
+=========================
+特征选择三类：**过滤式 Filter、包裹式 Wrapper、嵌入式 Embedded**
+=嵌入式 Embedded
+==决策树
+===格式化数据
+==随机森林
+=========================
+非结构化数据：图片、文本、音视频
+适用手段：NLP、CV、神经网络、聚类也行（向量化后）、计算机视觉
+决策树：擅长结构化表格数据
+========================
+==**召回：真的里面抓多少（查全率，防漏）**
+==**精确：猜正的里面对多少（查准率，防误报）**
+==**准确率：全部样本猜对比例**
+==**F1：精确召回综合得分**
+混淆矩阵维度：真实标签、预测标签（TP，以T为主）
+========================
+损失函数 → 计算误差 → 反向传播 → 更新模型参数
+准确率：只用来评估模型好坏，**不更新权重**
+======================
+**分类：预测类别（离散值）**，决策树、随机森林、SVM、逻辑回归
+**回归：预测数值（连续值）**，线性回归
+========================
+超参数寻优（调参）：网格搜索、随机搜索、贝叶斯优化
+K-means、KNN：是模型算法，**不是调参方法**
+================================
+新职业道德观念的核心理念：【服务意识】
+增强职业道德可以【协调员工之间的关系】增强企业内部凝聚力。
+================================
+=K 折交叉验证两大作用：**评估模型性能、选择最优模型**
+=点云基础信息：【三维坐标、颜色、反射强度】
+==纹理/距离，不是点云
+=模型评价：产出评价结果 → 复核重审 → 确定后续方案
+=按标注对象划分：**图像、文本、语音**三类。
+=*：任意多个字符
+=加班费【150%】
+=接入网络可【多级】联接。
+=以下哪项不是业务分析阶段需要识别的风险：【模型过拟合风险：**属于模型训练阶段才会出现的算法风险**】
+=AdaGrad：累积梯度 → 分母变大 → **学习率持续减小**
+=AI 智能系统设计顺序：首先确认数据 → 业务需求 → 系统架构 → 算法开发 → UI 交互**
+=数据拆解【发现数据中的隐藏模式和趋势】
+=机器标注算法对高层语义对象识别和【提取】效果不好。
+=人工智能 (AI) ⊃ 机器学习 (ML) ⊃ 深度学习 (DL)
+=智能客服系统中，自然语言处理 (NLP) 的主要作用是【提供多语言支持】
+=Fitts 定律（菲茨定律）：用于预测用户的【点击速度】
+=在使用TensorFlow进行AI模型测试时，如何加载已训练的模型？( )。使用tf.keras.models.load_model()
+==TensorFlow：**支持分布式、TensorBoard 可视化、接口灵活；支持 GPU，不局限机器学习**
+=缺失值处理：删除、插补、变换 / 新增缺失标记
+=流程优化方式不包括【配套方案设计】
+=主观审核 = 【用户主观感受】
+python 数组【输入】
+=半结构化标注 = **标签值【结构化】 + 标签域【非结构化】**
+=数字、数据 属于数学语言
+=【InVision】：**可交互原型、模拟产品体验**
+=【Adobe XD】：原型
+Attention-OCR 的优点不包括【增强记忆功能】 。
+=================================
+- **预剪枝**：树长到一半，提前停止生长（边建边剪）
+- **后剪枝**：先生成完整大树，再从底部往上剪（建好再剪）
+剪枝作用：**降低过拟合，提升泛化能力**
+=========================
+缓解过拟合手段：
+✅训练**过程中**：Dropout、BN 层、L1/L2 正则
+✅训练**之前**：扩充数据集、数据增强、早停（及时停止）、降低模型复杂度
+学习率：调整学习率主要是加快模型的训练速度
+=======================
+随机抽取样本→缺少 【覆盖度】
+================================
+**这个比较难理解**
+1. **回归（预测连续数字）**
+   - MSE (L2 均方损失)、MAE (L1 平均绝对损失)
+2. **分类（预测类别）**
+   - 交叉熵：深度学习分类最常用
+   - Hinge：SVM
+   - 0-1 损失：理想分类损失，无法直接优化
+===================================
+= CNN = 卷积神经网络（跟图像有关）
+= RNN = 循环神经网络（时序 / 语音文本），LSTM 属于 RNN 变体
+==OCR（光学字符识别），CNN找出位置/检测，RNN 属于识别/提取阶段
+=CTPN = OCR 文本检测经典模型;【是一个深度神经网络，使用多个卷积层】
+= GAN = 生成对抗网络（组件有【判别器】）
+= Transformer：NLP 主流架构
+=
+CRNN = 卷积循环神经网络是 OCR 文本识别经典模型，专门用来识别图片里单行不定长文本，**三段式结构**（考试高频）
+1. 第一部分：【卷积层（CNN）【图像】】
+2. 第二部分：【循环层（RNN / 双向 LSTM）【标签分布】】
+3. 第三部分：【转录层【CTC 损失函数】把 RNN 输出的标签分布翻译成最终文本】
+============================
+跟华为有关的题目：都是芯片
+选择无关的，一般都是界面友好度/精美度（有关的选这个）
+文本情感分析在自然语言处理领域成为了研究中的一个分支。
+=======================
+ART = 对抗鲁棒性工具箱；
+TensorFlow/PyTorch 是训练框架，sklearn 传统机器学习库。
+PyTorch 中负责自动微分的模块是什么？autograd
+========================
+**ModelArts（华为云一站式 AI 开发平台）**
+图片目标标注默认：**矩形框（长方形）**
+1. 完整 AI 链路：**数据管理 → 算法开发 → 模型训练 → 模型管理 → 部署上线**
+2. 数据管理模块能力：数据集管理、数据标注、数据处理（清洗、增强、校验）没有【采集功能】
+3. **AI Gallery**：配套资产集市，存放可复用模型、数据集、算子等 AI 资产（前面考题）
+4. 特点：支持 PyTorch/TensorFlow/MindSpore；支持自动学习 AutoML；支持端边云一键部署
+=====================
+**A ❌ LDA 线性判别分析** 属于有监督降维，目标是**让不同类别尽可能分开**
+**B ✅ PCA 主成分分析（正确）** PCA 核心原理：对原始坐标轴做旋转变换，找到方差最大的新坐标轴（主成分），构造最优子空间；实现**降维，并且消除特征之间的相关性**，无监督。主成分分析（PCA），底层基于 SVD；随机 SVD 是 PCA 的优化变种
+**C ❌ ICA 独立成分分析** 目标是把混合信号拆成互相**独立**的源信号
+**D ❌ 特征识别** 不是降维算法，只是识别特征的过程。
+=============
+池化层作用：缩小特征图(->减少神经网络模型的参数)、降低计算量、减少参数、一定程度防止过拟合。
+梯度消失问题 → 靠 ReLU、残差网络、批量归一化 BN 解决。
+--=============
+**A ✅ N-gram**：语言模型，常用于语音识别（ASR）
+**B ✅ RNN**：循环神经网络，可用于语音序列建模
+**C ✅ ASRT**：开源语音识别工具库
+**D ✅ LSTM**：RNN 的改进版本，擅长时序语音信号建模
+**E ❌ CNN**：卷积神经网络多用于图像；**不属于邀约机器人语音识别模块的常规组成**
+========================
+深度学习
+**A ✅ Word2Vec**：词向量模型
+**B ✅ Transformer**：深度学习基础架构
+**C ✅ BERT**：基于 Transformer 的预训练语言模型
+**D ❌ K-means**：聚类算法，属于无监督机器学习，**不属于深度学习**
+**E ❌ 决策树**：传统机器学习算法，不是深度学习技术。
+✅数据预处理：清洗、集成、变换、规约
+❌数据建模任务：分类、回归、聚类
+=监督学习：已有标注数据集，学习输入→标签映射 → 逻辑回归(分类)、KNN近邻算法、神经网络、监督学习
+==分类（Classification）：监督学习。预测变量是离散的类别标签
+==回归（Regression）：监督学习。预测变量是连续的数值
+=无监督学习：无标签 → 聚类（只是把一堆对象【集合分组】）、降维\K-means\谱聚类
+==聚类（Clustering）：无监督学习。【同类均值插补】
+强化学习：智能体交互环境，靠奖励信号学习策略
+=========================================
+启发式评估是一种由专家根据预设的可用性原则对界面进行快速评估的方法，它不需要用户参与
+AutoML（自动机器学习）可以自动完成特征工程、模型选择、超参调优等步骤，并非【完全不需要人工干预】。
+文本数据标注需要遵循一定的质量标准->错。
+全连接神经网络是神经网络模型中的一种
+管理者识别需求要利用信息支持评审过程输入、过程输出(错误，识别需求是挖掘业务目标)
+数据平滑 ≠ 去除噪声
+特征工程中，为了处理分类数据中的类别不平衡问题【使用 SMOTE（合成少数类过采样技术）】
+Python传统机器学习算法：【Scikit-learn】【非常适合表格结构化数据】
+【Pandas 】表格数据分析。
+数据变换：【将数据转变为符合要求的形式】
+数据清洗：【提升数据质量】
+【mAP 】平均精度均值（mean Average Precision）
+决策树的叶节点是【决策的结果】
+【YOLO 】是目标检测（物体识别）经典算法。
+【Sigmoid】极易梯度消失</div>
+    </details>
+
+  <div class="footer">ZHX NEXUS Studio · 个人学习笔记 · Astro 博客风格版</div>
+</div>
+
+<style>
+  /* Astro 个人博客风格 · 暖色系（橙/琥珀），与博客 theme.css 一致 */
+  /* 作用域隔离：变量定义在 .exam-note 上，仅作用于本组件，不污染博客头部/页脚 */
+  .exam-note {
+    --bg-paper: #fafafa;
+    --bg-card: #ffffff;
+    --bg-hover: #f1f1f1;
+    --text-main: #1a1a1a;
+    --text-muted: #6b7280;
+    --accent: #e85d04;
+    --accent-soft: #ffedd5;
+    --primary: #e85d04;
+    --primary-light: #ffedd5;
+    --border: #e5e5e5;
+    --border-dark: #d4d4d4;
+    --prac: #475569;
+    --prac-light: #f1f5f9;
+    --prac-dark: #334155;
+    --warning-red: #be123c;
+    --warning-bg: #ffe4e6;
+    --success-green: #15803d;
+    --success-bg: #dcfce7;
+    --highlight-yellow: #b45309;
+    --highlight-bg: #fef3c7;
+    --radius: 12px;
+    --font: "PingFang SC","Microsoft YaHei","Noto Sans SC",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    font-family: var(--font);
+    line-height: 1.75;
+    font-size: 15px;
+    color: var(--text-main);
+  }
+  /* 暗色模式：兼容系统偏好 与 博客 data-theme="dark" 切换 */
+  @media (prefers-color-scheme: dark) {
+    .exam-note {
+      --bg-paper: #0f0f0f;
+      --bg-card: #1a1a1a;
+      --bg-hover: #262626;
+      --text-main: #eaeaea;
+      --text-muted: #afb9ca;
+      --accent: #ff9f1c;
+      --accent-soft: #2a1c08;
+      --primary: #ff9f1c;
+      --primary-light: #3a2607;
+      --border: #2a2a2a;
+      --border-dark: #3a3a3a;
+      --prac: #94a3b8;
+      --prac-light: #1e293b;
+      --prac-dark: #cbd5e1;
+      --warning-red: #fb7185;
+      --warning-bg: #3a141b;
+      --success-green: #4ade80;
+      --success-bg: #0f2a1a;
+      --highlight-yellow: #fbbf24;
+      --highlight-bg: #2a230a;
+    }
+  }
+  :root[data-theme="dark"] .exam-note {
+    --bg-paper: #0f0f0f;
+    --bg-card: #1a1a1a;
+    --bg-hover: #262626;
+    --text-main: #eaeaea;
+    --text-muted: #afb9ca;
+    --accent: #ff9f1c;
+    --accent-soft: #2a1c08;
+    --primary: #ff9f1c;
+    --primary-light: #3a2607;
+    --border: #2a2a2a;
+    --border-dark: #3a3a3a;
+    --prac: #94a3b8;
+    --prac-light: #1e293b;
+    --prac-dark: #cbd5e1;
+    --warning-red: #fb7185;
+    --warning-bg: #3a141b;
+    --success-green: #4ade80;
+    --success-bg: #0f2a1a;
+    --highlight-yellow: #fbbf24;
+    --highlight-bg: #2a230a;
+  }
+
+  .exam-note section{margin-bottom:34px;scroll-margin-top:90px}
+  .exam-note section > h2{font-size:20px;font-weight:700;padding-left:12px;border-left:4px solid var(--primary);margin-bottom:6px;color:var(--text-main)}
+  .exam-note section > .desc{color:var(--text-muted);font-size:13.5px;margin-bottom:16px;padding-left:12px}
+  .exam-note .block{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;margin-bottom:14px}
+  .exam-note .block h3{font-size:16px;font-weight:600;margin-bottom:8px;color:var(--text-main)}
+  .exam-note .block h3 .en{color:var(--text-muted);font-weight:400;font-size:13px;margin-left:6px}
+  .exam-note ul.note{list-style:none;padding-left:2px}
+  .exam-note ul.note > li{position:relative;padding:5px 0 5px 16px}
+  .exam-note ul.note > li::before{content:"▪";color:var(--primary);position:absolute;left:0;top:5px}
+  .exam-note .kv{display:flex;flex-wrap:wrap;gap:6px 18px;padding:4px 0}
+  .exam-note .kv b{color:var(--highlight-yellow)}
+
+  /* 重点【】 */
+  .exam-note .hl{background:var(--highlight-bg);color:var(--highlight-yellow);padding:1px 6px;border-radius:6px;font-weight:600}
+  /* 否定/易错强调 */
+  .exam-note .neg{color:var(--warning-red);font-weight:700;border-bottom:2px solid var(--warning-red);padding:0 2px}
+  .exam-note .negwrap{background:var(--warning-bg);border-left:3px solid var(--warning-red);border-radius:6px;padding:6px 12px;margin:6px 0}
+  /* 难度徽标 */
+  .exam-note .diff{font-size:11px;font-weight:700;border-radius:6px;padding:1px 7px;margin-left:8px;vertical-align:middle}
+  .exam-note .d-high{background:var(--warning-bg);color:var(--warning-red)}
+  .exam-note .d-mid{background:var(--highlight-bg);color:var(--highlight-yellow)}
+  .exam-note .d-low{background:var(--success-bg);color:var(--success-green)}
+
+  /* 技术/工具解耦库 */
+  .exam-note .lib{border-left:3px solid var(--primary);background:rgba(232,93,4,.04)}
+  .exam-note .lib .row{display:flex;gap:14px;padding:9px 0;border-bottom:1px dashed var(--border)}
+  .exam-note .lib .row:last-child{border-bottom:none}
+  .exam-note .lib .name{color:var(--primary);font-weight:700;min-width:170px;flex-shrink:0}
+  .exam-note .lib .name .tag{font-size:11px;color:var(--text-muted);font-weight:400;display:block}
+  .exam-note .lib .body{flex:1;color:var(--text-main)}
+  .exam-note .lib .body .rel{color:var(--text-muted);font-size:13px;margin-top:3px}
+  .exam-note .arrow{color:var(--primary);font-weight:700}
+
+  /* 树/分支 */
+  .exam-note .tree{font-size:14px}
+  .exam-note .tree .lv1{font-weight:700;color:var(--primary);margin:8px 0 4px;padding-left:0}
+  .exam-note .tree .lv2{padding-left:22px;position:relative}
+  .exam-note .tree .lv2::before{content:"├─";color:var(--border-dark);position:absolute;left:6px}
+  .exam-note .tree .lv3{padding-left:44px;color:var(--text-muted);position:relative}
+  .exam-note .tree .lv3::before{content:"└─";color:var(--border-dark);position:absolute;left:28px}
+  .exam-note .tree .lv2.child::before{content:"└─";}
+
+  /* 关联图 SVG 容器 */
+  .exam-note .diagram{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin:12px 0;overflow-x:auto}
+  .exam-note .diagram svg{display:block;margin:0 auto;max-width:100%;height:auto}
+  .exam-note .relnote{color:var(--text-muted);font-size:12.5px;text-align:center;margin-top:4px}
+  .exam-note .relnote a{color:var(--primary)}
+
+  /* 拓展块 */
+  .exam-note .expand{background:rgba(232,93,4,.06);border:1px solid #e7c9b8;border-left:3px solid var(--primary);border-radius:10px;padding:12px 15px;margin-top:10px;font-size:13.5px;color:var(--text-main)}
+  .exam-note .expand .et{color:var(--primary);font-weight:700;font-size:13px;margin-bottom:5px}
+  .exam-note .expand .back{display:inline-block;margin-top:8px;font-size:12px;color:var(--primary);text-decoration:none;border:1px solid var(--border);border-radius:8px;padding:2px 9px;background:var(--bg-paper)}
+  .exam-note .expand .back:hover{background:var(--primary-light)}
+
+  /* 原文对照 */
+  .exam-note details.orig{margin-top:40px;border-top:2px solid var(--border-dark);padding-top:18px}
+  .exam-note details.orig summary{cursor:pointer;color:var(--text-muted);font-size:14px;font-weight:600;list-style:none}
+  .exam-note details.orig summary::-webkit-details-marker{display:none}
+  .exam-note details.orig summary::before{content:"▸ ";color:var(--text-muted)}
+  .exam-note details.orig[open] summary::before{content:"▾ ";}
+  .exam-note .origbox{color:var(--text-muted);font-size:12.5px;line-height:1.7;background:var(--bg-hover);border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin-top:12px;white-space:pre-wrap;font-family:"SFMono-Regular",Consolas,monospace}
+
+  .exam-note .footer{text-align:center;color:var(--text-muted);font-size:12px;margin-top:40px}
+
+  /* 其余信息胶囊（如 泊松/二项 等）保持浅底圆角 */
+  .exam-note .pill{display:inline-block;background:var(--bg-card);border:1px solid var(--border);border-radius:20px;padding:5px 14px;margin:5px;font-size:13px;color:var(--text-main)}
+
+  /* ===== 卷宗分区标识（理论题 / 实操题 区分）===== */
+  .exam-note .parttab{display:flex;gap:10px;justify-content:center;margin:10px 0 2px}
+  .exam-note .parttab a{flex:1;max-width:340px;text-align:center;text-decoration:none;font-weight:700;padding:9px 0;border-radius:12px;font-size:14px;border:1px solid var(--border);transition:.2s}
+  .exam-note .parttab .t-theory{background:var(--primary-light);color:var(--primary);border-color:var(--primary)}
+  .exam-note .parttab .t-theory:hover{background:#ffdcc0}
+  .exam-note .parttab .t-prac{background:#f1f5f9;color:#475569;border-color:#475569}
+  .exam-note .parttab .t-prac:hover{background:#e2e8f0}
+
+  .exam-note .partdivider{display:flex;align-items:center;gap:14px;margin:14px 0 24px;padding:15px 20px;border-radius:var(--radius);scroll-margin-top:90px}
+  .exam-note .partdivider.theory{background:linear-gradient(90deg,#fbe9df,#fbf9f5);border-left:6px solid var(--primary)}
+  .exam-note .partdivider.prac{background:linear-gradient(90deg,#f1f5f9,#fbf9f5);border-left:6px solid #475569}
+  .exam-note .partdivider .ptag{font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px;color:#fff;white-space:nowrap}
+  .exam-note .partdivider.theory .ptag{background:var(--primary)}
+  .exam-note .partdivider.prac .ptag{background:#475569}
+  .exam-note .partdivider h2{font-size:18px;margin:0;color:var(--text-main)}
+  .exam-note .partdivider .sub{font-size:12.5px;color:var(--text-muted);margin-top:3px;line-height:1.5}
+
+  /* 实操题区块标题用钢蓝，与理论题(暖红棕)区分 */
+  .exam-note section.prac > h2{border-left-color:#475569}
+  .exam-note section.prac > .desc{color:#475569}
+
+  /* 代码块（纸感浅底）*/
+  .exam-note .code{background:#efe9dc;color:#3a2f25;border:1px solid var(--border);font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace;font-size:13px;line-height:1.65;padding:14px 16px;border-radius:10px;overflow-x:auto;white-space:pre;margin:8px 0}
+  .exam-note .code .cm{color:#e85d04}
+  .exam-note .code .kw{color:#475569;font-weight:600}
+  .exam-note .code .fn{color:#475569;font-weight:700;background:rgba(71,85,105,.13);border-radius:4px;padding:0 4px}
+  /* 流程图 */
+  .exam-note .flow{max-width:440px;margin:10px auto 4px;display:flex;flex-direction:column;align-items:center}
+  .exam-note .flow .step{width:100%;text-align:center;background:#f1f5f9;border:1px solid #475569;border-radius:10px;padding:10px 14px;font-weight:600;color:#475569}
+  .exam-note .flow .step .num{display:inline-block;min-width:22px;height:22px;line-height:22px;background:#475569;color:#fff;border-radius:50%;margin-right:8px;font-size:12px;font-weight:700}
+  .exam-note .flow .arr{color:#475569;font-size:18px;line-height:1.1;margin:2px 0}
+
+  /* 固定吸顶目录 */
+  .exam-note nav.toc{position:sticky;top:0;z-index:50;background:var(--bg-paper);border:1px solid var(--border);border-radius:var(--radius);padding:12px 18px;margin-bottom:28px;box-shadow:0 3px 10px rgba(45,42,38,.06)}
+  .exam-note nav.toc h2{font-size:13px;color:var(--text-muted);font-weight:600;margin-bottom:8px;letter-spacing:.5px}
+  .exam-note nav.toc ul{list-style:none;display:flex;flex-wrap:wrap;gap:6px 10px}
+  .exam-note nav.toc a{color:var(--primary);text-decoration:none;font-size:13px;border:1px solid var(--border);border-radius:18px;padding:3px 11px;background:var(--bg-card);transition:.2s}
+  .exam-note nav.toc a:hover{background:var(--primary-light);border-color:var(--primary)}
+
+  /* 响应式：平板 */
+  @media (min-width:769px) and (max-width:1024px){
+    .exam-note section{margin-bottom:30px}
+    .exam-note section > h2{font-size:19px}
+  }
+  /* 响应式：手机 */
+  @media (max-width:768px){
+    .exam-note{font-size:14px}
+    .exam-note section{margin-bottom:26px}
+    .exam-note section > h2{font-size:17px}
+    .exam-note section > .desc{font-size:12.5px}
+    .exam-note nav.toc{top:0;padding:10px 12px;max-height:42vh;overflow:auto}
+    .exam-note nav.toc ul{gap:5px 6px}
+    .exam-note nav.toc a{font-size:11.5px;padding:2px 8px}
+    .exam-note .block{padding:13px 13px}
+    .exam-note .lib .row{flex-direction:column;gap:4px}
+    .exam-note .lib .name{min-width:auto}
+    .exam-note .diagram{padding:10px 6px}
+    .exam-note .expand{font-size:13px}
+    .exam-note .pill{font-size:12px;padding:4px 10px}
+  }
+</style>
