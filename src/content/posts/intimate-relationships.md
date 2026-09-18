@@ -14,7 +14,6 @@ draft: false
 
 ## 思维导图
 
-- 金山文档：[分图一](https://www.kdocs.cn/office/f/GUZDCNRWGYYDQOJZGIZTUWSPJJCFERCKJBAUEUKFGY?sub_file_id=C23DTFZHACQCI&attachment_store_type=upload_ks3&disablePlugins&readonly) ｜ [分图二](https://www.kdocs.cn/office/f/GUZDCNRWGYYDQOJZGIZTUWSPJJCFERCKJBAUEUKFGY?sub_file_id=KHBNRJZHAAQH6&attachment_store_type=upload_ks3&disablePlugins&readonly)
 - 在线 XMind：[xmind.app/share/shartoo](https://xmind.app/share/shartoo/)
 - 笔记 PDF：[《亲密关系》全书精细摘录版（下载）](/files/intimate-relationships-notes.pdf)
 
