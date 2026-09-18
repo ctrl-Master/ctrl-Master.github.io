@@ -1,0 +1,483 @@
+---
+title: "改善提案查重评测笔记"
+pubDatetime: 2026-09-17
+description: "基于 FastGPT 改善提案知识库的查重评测实践：Golden Set 设计、查全/查准/匹配准确率指标、阈值扫描，以及 12 条实际踩过的坑。"
+tags: ["改善提案", "查重评测", "FastGPT", "企业", "AI", "业务"]
+draft: false
+---
+
+此前搭了一套「改善提案知识库」：FastGPT，3562 条，走开放 API，员工提交提案前做查重提示。库上线后一直有个说不清的问题——它到底查得准不准？哪些重复查得出来、会不会误伤全新提案、命中的是不是同一条、阈值该怎么定。
+
+这篇笔记记录我当时做查重评测的思路和一套 Python 评测脚本，留着给自己复盘。
+
+> 适用边界：查重应用在 FastGPT 上绑定了改善提案知识库，开启引用（quote）返回；评测脚本走开放 API 调同一个应用，保证评测环境和生产提交前查重完全一致。
+
+---
+
+## 一、目录结构
+
+当时用的结构，仅供参考：
+
+```text
+proposal_dedup_eval/
+├── data/
+│   ├── golden_set/
+│   │   ├── golden_set_v1.xlsx          # 标准测试集（人工构建）
+│   │   └── golden_set_v1.json          # 备份
+│   ├── results/
+│   │   ├── eval_v1.0_20260917.xlsx
+│   │   ├── eval_v1.1_20260920.xlsx
+│   │   └── comparison_report.md
+│   └── kb_snapshot/
+│       └── kb_id_title_map_20260917.csv # 知识库"ID↔标题"快照（用于 expected_match_id 校验）
+├── scripts/
+│   ├── build_golden_set.py             # 辅助构建/脱敏测试集（可选）
+│   ├── dedup_client.py                 # FastGPT 查重 API 封装
+│   ├── metrics.py                      # 指标计算（查全/查准/F1/匹配准确率/阈值敏感度）
+│   ├── run_eval.py                     # 主评测脚本
+│   └── generate_report.py              # 报告生成
+├── config/
+│   └── config.yaml                     # API Key、模型、阈值、库快照路径
+├── requirements.txt
+└── README.md
+```
+
+---
+
+## 二、标准测试集（Golden Set）设计
+
+### 2.1 字段规范
+
+| 字段名 | 类型 | 必填 | 说明 |
+|--------|------|------|------|
+| id | str | 是 | GS-001 |
+| proposal_text | str | 是 | 提交的提案内容（建议"标题 + 换行 + 正文"与原提交表单一致） |
+| expected_verdict | str | 是 | `duplicate` / `similar` / `not_duplicate` |
+| expected_match_id | str | 否 | 期望命中的**已有提案 ID**（duplicate/similar 时必填） |
+| expected_match_title | str | 否 | 期望命中的标题（辅助校验，防 ID 漂移） |
+| question_type | str | 是 | 见 2.2 |
+| difficulty | str | 是 | easy / medium / hard |
+| ground_truth_excerpt | str | 否 | 被期望命中的那条提案的原文片段（用于判定"命中对象是否真的是同一条"） |
+| tags | str | 否 | 业务标签（车间/工序/改善类型） |
+| notes | str | 否 | 备注 |
+
+**注意**：`expected_match_id` 必须来自**评测当天的知识库快照**（`kb_snapshot/`）。库是增量更新的，三个月前的 ID 可能已合并/删除，导致"系统明明对了却被判错"。
+
+### 2.2 问题类型与覆盖比例（建议 200 条起步）
+
+| question_type | 含义 | 占比 | 期望 verdict |
+|---------------|------|------|--------------|
+| `exact` | 与库中某条**字面几乎一致**（同标题同正文） | 15% | duplicate |
+| `semantic` | **改写但核心改善点相同**（换说法、调语序、拆句） | 30% | similar |
+| `evasion` | **规避式改写**（改数字/同义词/加无关修饰，试图绕过查重） | 10% | similar 或 duplicate |
+| `partial` | **部分重叠**（解决同一痛点但范围/对象不同，如 A 车间 vs B 车间） | 15% | similar（需谨慎，见踩坑④） |
+| `cross_dept` | **同名不同义**（多个车间都有"5S整顿""降低能耗"，但内容无关） | 15% | not_duplicate |
+| `not_dup` | **全新提案**（库里确实没有） | 15% | not_duplicate |
+
+> 初期 200 条即可覆盖主要类型；稳定后扩到 400–500 条，并按车间/改善类型分层抽样。
+
+### 2.3 示例
+
+| id | proposal_text | expected_verdict | expected_match_id | question_type | difficulty |
+|----|---------------|------------------|-------------------|---------------|------------|
+| GS-001 | 降低 xx 车间焊接工序焊丝损耗：通过优化电流参数与回收余料，预计月省 800 元 | duplicate | P-10233 | exact | easy |
+| GS-002 | 焊丝浪费怎么省？我们焊接线把电流调小还收余料，一个月能省大概八百块 | similar | P-10233 | semantic | medium |
+| GS-003 | 把焊接电流调低、余料回收，每月节省约 800 元（原案是 820，这里写 800 规避） | similar | P-10233 | evasion | hard |
+| GS-004 | 降低 yy 车间装配线螺丝损耗：优化扭矩参数与回收 | not_duplicate | — | cross_dept | medium |
+| GS-005 | 员工餐补线上申领流程优化：接入企微审批自动核算 | not_duplicate | — | not_dup | easy |
+
+---
+
+## 三、核心实现（参考）
+
+### 3.1 `config/config.yaml`
+
+```yaml
+fastgpt:
+  api_key: "fastgpt-xxxxxxxx"
+  base_url: "https://api.fastgpt.in/api/v1/chat/completions"  # 或私有化地址
+  app_id: "xxxx"                 # 查重应用 ID（若有）
+  user: "eval_user"
+  detail: true                   # 关键：返回 quote（命中的知识库条目）
+  stream: false
+
+eval:
+  # 判定"命中"的相似度阈值；run_eval 会做阈值扫描
+  similarity_threshold: 0.6
+  timeout: 30
+  # 查重应限定在改善提案体系内（见踩坑⑧），不跨其他知识库
+  restrict_to_proposal_kb: true
+
+paths:
+  golden_set: "data/golden_set/golden_set_v1.xlsx"
+  results_dir: "data/results"
+  kb_snapshot: "data/kb_snapshot/kb_id_title_map_20260917.csv"
+```
+
+### 3.2 `scripts/dedup_client.py`（FastGPT 查重接口封装）
+
+```python
+import time
+import httpx
+from typing import Dict, Any, Optional, List
+
+class DedupClient:
+    """封装 FastGPT 查重：发送提案文本，返回命中的已有提案列表（quote）。"""
+    def __init__(self, api_key: str, base_url: str, user: str = "eval_user",
+                 detail: bool = True, timeout: float = 30.0):
+        self.api_key = api_key
+        self.base_url = base_url.rstrip("/")
+        self.user = user
+        self.detail = detail
+        self.timeout = timeout
+        self.headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        }
+
+    def check(self, proposal_text: str, conversation_id: Optional[str] = None) -> Dict[str, Any]:
+        """
+        返回结构：
+        {
+          "success": bool,
+          "answer": str,            # FastGPT 生成的查重提示文本
+          "matches": [              # 命中的已有提案（来自 quote）
+             {"id": str, "title": str, "score": float, "content": str}, ...
+          ],
+          "latency": float,
+          "usage": dict,
+          "error": str
+        }
+        """
+        payload = {
+            "chatId": conversation_id or "",
+            "stream": False,
+            "detail": self.detail,
+            "messages": [{"role": "user", "content": proposal_text}]
+        }
+        start = time.time()
+        try:
+            with httpx.Client(timeout=self.timeout) as client:
+                resp = client.post(self.base_url, headers=self.headers, json=payload)
+                resp.raise_for_status()
+                data = resp.json()
+        except Exception as e:
+            return {"success": False, "answer": "", "matches": [],
+                    "latency": time.time() - start, "usage": {}, "error": str(e)}
+
+        latency = time.time() - start
+
+        # 解析 quote：FastGPT detail=true 时，data.data[0].quote 是命中知识库条目
+        matches: List[Dict] = []
+        try:
+            quotes = data.get("data", [{}])[0].get("quote", []) or []
+            for q in quotes:
+                matches.append({
+                    "id": str(q.get("id", "")),
+                    "title": q.get("sourceName") or q.get("q") or "",
+                    "score": float(q.get("score") or 0.0),
+                    "content": (q.get("a") or q.get("content") or "")[:300]
+                })
+        except Exception:
+            pass
+
+        return {
+            "success": True,
+            "answer": data.get("answer", ""),
+            "matches": matches,
+            "latency": latency,
+            "usage": data.get("usage", {}) or {},
+            "error": ""
+        }
+```
+
+> **对接要点**：我们是"开放 API + 提交前查重提示"，逻辑就是"把提案文本丢给 FastGPT 查重应用，它返回相似提案"。`detail=true` 能拿到 `quote`（命中的知识库条目），这是判定的黄金信号。若用的是 FastGPT 的 `dataset/search` 接口（直接检索而非对话），把 `check()` 换成对应请求、解析 `data` 数组即可，结构一致。
+
+### 3.3 `scripts/metrics.py`（指标计算）
+
+查重本质是一个**检索 + 分类**问题，核心看"该查出来的查出来没、不该查的误伤没、查的对象对不对"。
+
+```python
+from typing import List, Dict, Optional
+
+class DedupMetrics:
+    # —— 单条判定 ——
+    def is_hit(self, matches: List[Dict], expected_id: Optional[str],
+               threshold: float) -> bool:
+        """在 matches 中是否找到 expected_id 且分数 >= 阈值。"""
+        if not expected_id:
+            return False
+        for m in matches:
+            if str(m.get("id", "")).strip() == str(expected_id).strip() \
+               and float(m.get("score", 0.0)) >= threshold:
+                return True
+        return False
+
+    # —— 集合指标（一轮跑完汇总）——
+    def summarize(self, rows: List[Dict], threshold: float) -> Dict[str, float]:
+        """
+        rows: 每条评测结果，字段含
+          expected_verdict, expected_match_id, matches(列表),
+          should_flag(bool=是否应命中), is_dup_family(bool=duplicate/similar/evasion)
+        """
+        total = len(rows)
+        # 该命中（dup家族）的题
+        should_flag = [r for r in rows if r["should_flag"]]
+        # 不该命中（not_dup / cross_dept）的题
+        should_not_flag = [r for r in rows if not r["should_flag"]]
+
+        tp = sum(1 for r in should_flag if self.is_hit(r["matches"], r["expected_match_id"], threshold))
+        fn = len(should_flag) - tp                      # 漏报
+        fp = sum(1 for r in should_not_flag if r["matches"])  # 误报（返回了任何命中）
+        tn = len(should_not_flag) - fp
+
+        recall = tp / len(should_flag) if should_flag else 1.0
+        precision = tp / (tp + fp) if (tp + fp) else 1.0
+        f1 = (2 * precision * recall / (precision + recall)) if (precision + recall) else 0.0
+        false_negative_rate = fn / len(should_flag) if should_flag else 0.0
+        false_positive_rate = fp / len(should_not_flag) if should_not_flag else 0.0
+
+        # 匹配准确率：在"命中且应命中"的题里，返回的 ID 是不是真等于 expected
+        match_acc_denom = [r for r in should_flag if self.is_hit(r["matches"], r["expected_match_id"], threshold)]
+        match_acc = 0.0
+        if match_acc_denom:
+            correct = sum(1 for r in match_acc_denom
+                          if any(str(m.get("id",""))==str(r["expected_match_id"]) for m in r["matches"]))
+            match_acc = correct / len(match_acc_denom)
+
+        return {
+            "total": total,
+            "recall": recall,                 # 查全率（该查的查出来没）
+            "precision": precision,           # 查准率（查出来的真该查吗）
+            "f1": f1,
+            "match_accuracy": match_acc,      # 命中对象对不对
+            "false_negative_rate": false_negative_rate,  # 漏报率
+            "false_positive_rate": false_positive_rate,  # 误报率
+        }
+
+    def threshold_sweep(self, rows: List[Dict], thresholds: List[float]) -> List[Dict]:
+        """扫描不同阈值，帮你定最佳 similarity_threshold。"""
+        out = []
+        for t in thresholds:
+            m = self.summarize(rows, t)
+            m["threshold"] = t
+            out.append(m)
+        return out
+```
+
+### 3.4 `scripts/run_eval.py`（主评测脚本）
+
+```python
+import yaml
+import pandas as pd
+from pathlib import Path
+from datetime import datetime
+from dedup_client import DedupClient
+from metrics import DedupMetrics
+
+DUP_FAMILY = {"duplicate", "similar", "evasion"}
+
+def load_config():
+    with open("config/config.yaml", encoding="utf-8") as f:
+        return yaml.safe_load(f)
+
+def main():
+    cfg = load_config()
+    client = DedupClient(
+        api_key=cfg["fastgpt"]["api_key"],
+        base_url=cfg["fastgpt"]["base_url"],
+        user=cfg["fastgpt"]["user"],
+        detail=cfg["fastgpt"]["detail"],
+        timeout=cfg["eval"]["timeout"],
+    )
+    threshold = float(cfg["eval"]["similarity_threshold"])
+
+    df = pd.read_excel(cfg["paths"]["golden_set"])
+    rows = []
+    for idx, r in df.iterrows():
+        print(f"评测 {r['id']} ({idx+1}/{len(df)}) 类型={r['question_type']}")
+        resp = client.check(str(r["proposal_text"]))
+
+        should_flag = str(r["expected_verdict"]).lower() in DUP_FAMILY
+        rows.append({
+            "id": r["id"],
+            "question_type": r["question_type"],
+            "difficulty": r["difficulty"],
+            "expected_verdict": r["expected_verdict"],
+            "expected_match_id": str(r.get("expected_match_id", "")).strip(),
+            "should_flag": should_flag,
+            "matches": resp.get("matches", []),
+            "success": resp.get("success", False),
+            "latency": round(resp.get("latency", 0), 3),
+            "error": resp.get("error", ""),
+            "pred_match_ids": ",".join(str(m.get("id","")) for m in resp.get("matches", [])),
+        })
+
+    calc = DedupMetrics()
+    summary = calc.summarize(rows, threshold)
+
+    # 阈值扫描（可选，跑慢但有用）
+    sweep = calc.threshold_sweep(rows, [0.4, 0.5, 0.6, 0.7, 0.8])
+
+    # 落盘
+    out_df = pd.DataFrame(rows)
+    ts = datetime.now().strftime("%Y%m%d")
+    version = "v1.0"
+    out_path = Path(cfg["paths"]["results_dir"]) / f"eval_{version}_{ts}.xlsx"
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_df.to_excel(out_path, index=False)
+
+    print("\n===== 评测汇总（阈值=%.2f）=====" % threshold)
+    for k, v in summary.items():
+        print(f"{k}: {v}")
+    print(f"结果已保存: {out_path}")
+    print("\n阈值扫描:")
+    for s in sweep:
+        print(f"  t={s['threshold']} recall={s['recall']:.2%} precision={s['precision']:.2%} f1={s['f1']:.2%} FNR={s['false_negative_rate']:.2%} FPR={s['false_positive_rate']:.2%}")
+
+if __name__ == "__main__":
+    main()
+```
+
+### 3.5 `scripts/generate_report.py`（报告生成）
+
+读取多次评测 Excel，计算各版本均值，生成 Markdown（结构同原方案第四节），重点放：
+
+- 执行摘要（库规模、核心指标、响应时间）
+- 版本对比表
+- 分类型表现（exact/semantic/evasion/partial/cross_dept/not_dup 各自的查全/误报）
+- 典型失败案例（漏报哪些、误报哪些）
+- 阈值建议（来自 threshold_sweep）
+- 改进建议
+
+报告结构建议：
+
+```markdown
+# 改善提案查重评测报告
+
+## 1. 执行摘要
+- 知识库规模：3562 条；测试集：200 条
+- 查全率 78% → 93%，误报率 12% → 4%，匹配准确率 85% → 96%
+- 平均响应：1.6s
+
+## 2. 版本对比表
+| 版本 | 查全率 | 查准率 | F1 | 匹配准确率 | 误报率 | 平均耗时 | 失败率 |
+|------|--------|--------|----|------------|--------|----------|--------|
+| v1.0 | 78%    | 88%    |0.83| 85%        | 12%    | 1.9s     | 2%     |
+| v1.1 | 93%    | 95%    |0.94| 96%        | 4%     | 1.6s     | 1%     |
+
+## 3. 分类型表现
+...
+
+## 4. 典型失败案例
+...
+
+## 5. 阈值建议
+...
+
+## 6. 改进建议
+...
+```
+
+---
+
+## 四、与 FastGPT 的对接方式
+
+1. **查重应用**：在 FastGPT 建一个"查重专用"应用，绑定改善提案知识库，开"引用/quote 返回"。
+2. **调用方式**：评测脚本走开放 API（`/api/v1/chat/completions`，`detail=true`）。
+3. **限定范围（重要）**：查重必须限定在「改善提案体系内」——只检改善提案库，不跨其他知识库误命中（见踩坑⑧）。
+4. **一致性**：评测用的 app 配置（检索参数、top_k、相似度阈值）必须与**生产提交前查重**完全一致，否则评测结果不能代表线上。
+5. **知识库快照**：评测当天导出 `kb_id_title_map.csv`（ID + 标题 + 入库时间），Golden Set 的 `expected_match_id` 以此为准。
+
+---
+
+## 五、落地节奏（当时排的）
+
+| 阶段 | 时间 | 关键动作 | 产出 |
+|------|------|----------|------|
+| Day 1-2 | 构建 Golden Set | 抽样 3562 条 + 人工写 150–200 条（含脱敏，见踩坑①） | `golden_set_v1.xlsx` + `kb_snapshot` |
+| Day 3 | 跑通脚本 | 调通 FastGPT API + quote 解析 + 基础指标 | 能跑完一轮 |
+| Day 4 | 第一轮基线 | 记录当前查重能力 | `eval_v1.0_xxx.xlsx` + 简报 |
+| Day 5-7 | 优化 + 再评测 | 调检索参数/top_k/阈值/提示词 | 对比报告（如 78%→93%） |
+| 后续 | 常态化 | 每次重大变更（知识库增量、检索策略调整）都跑评测 | 版本化记录 |
+
+---
+
+## 六、额外建议（让体系更完整）
+
+1. **专项集**：单独准备 30–50 条"库里真没有"的题，专看误报率。
+2. **成本计算**：按 token 单价把 `usage` 转金额，评估每次提交查重的成本。
+3. **人工抽检**：每轮随机抽 20 条人工复核，校准"LLM/规则判分"的偏差。
+4. **库内自重复检测**：3562 条本身可能已有重复，先跑一遍"库 vs 库"自查，把库自身的重复作为已知问题隔离，避免污染评测预期。
+5. **权限测试**：用不同权限 Key 跑同一套集，验证查重范围过滤是否生效。
+
+---
+
+## 七、踩过的坑（12 条）
+
+这些是我实际踩过或预判的坑，逐条对照能少走弯路。
+
+### ① 测试集泄漏 / 脱敏
+
+- **坑**：直接用库里原文当测试题 = 开卷考试，指标虚高。
+- **做法**：`semantic`/`evasion` 类型必须对原提案做**改写/脱敏**后再用；人名、单位、供应商按规范脱敏为 `xx`；但**保留可识别的改善点关键词**（如设备名、工序名），否则系统本就该判不重复。
+- **验证**：抽 10 条让不懂业务的人看，确认"看不出它来自哪条库记录"。
+
+### ② 知识库是活的，`expected_match_id` 会漂移
+
+- **坑**：今天写 `P-10233` 是重复，下个月那条被合并/删除，系统返回空被判"漏报"——其实是库变了。
+- **做法**：每个版本评测配套一份 `kb_snapshot`；报告里标注"基于 X 日库快照"。库大版本更新后必须重导快照、复核 Golden Set。
+
+### ③ 字面相同 ≠ 语义相同，反之亦然
+
+- **坑**：同一改善点换了说法（`降低损耗` vs `减少浪费`）应判相似，但不同设备/不同工序的**同名问题**（多个车间都有"5S整顿"）不应误判为重复。
+- **做法**：`cross_dept` 类型正是为此存在；若系统对同名不同义大量误报，说明检索/向量没区分上下文，需加"车间/工序"字段过滤。
+
+### ④ `partial`（部分重叠）的判定边界模糊
+
+- **坑**：A 车间焊丝损耗 vs B 车间焊丝损耗，算重复还是不算？业务上常认为"可参考但不算重复"。
+- **做法**：`partial` 的 `expected_verdict` 建议标 `similar`，但在指标里单独分组观察；不要把它硬塞进 duplicate/not_dup 二分，否则拉低指标且误导优化方向。
+
+### ⑤ 阈值（similarity_threshold）是核心旋钮，必须扫描
+
+- **坑**：固定一个阈值可能顾此失彼——阈值高则漏报多（真重复没查出来），阈值低则误报多（全新提案被判重复，打击员工提交积极性）。
+- **做法**：`threshold_sweep([0.4,0.5,0.6,0.7,0.8])` 看 F1/误报率曲线，选业务可接受的点（通常误报率权重更高，因为误报的体验代价更大）。
+
+### ⑥ 评测集规模与分层抽样
+
+- **坑**：200 条若 80% 是 not_dup，查全率再高也没意义；类型比例要贴近真实提交分布。
+- **做法**：先用历史提交日志统计真实类型分布，按比例抽样；`hard` 难度（evasion）样本要够，否则测不出"规避式绕过"风险。
+
+### ⑦ 接口限流 / 超时 / 不稳定
+
+- **坑**：200 题 × 多轮 × 多阈值，FastGPT 可能限流；单条失败若直接崩溃，前面白跑。
+- **做法**：`dedup_client` 已做异常兜底（返回 `success=False` 而非抛异常）；`run_eval` 建议加**断点续跑**（记录已完成的 id，重跑时跳过）+ 简单退避重试；结果逐条落盘，不等全部跑完。
+
+### ⑧ 查重范围必须限定"改善提案体系内"
+
+- **坑**：若查重应用同时挂了其他知识库，提案可能命中无关文档被判重复/相似，污染指标也污染生产。
+- **做法**：评测配置 `restrict_to_proposal_kb: true`；生产查重应用同样只绑改善提案库；Golden Set 的 `expected_match_id` 只可能是提案库 ID。
+
+### ⑨ 判分信号来源要可信
+
+- **坑**：用 FastGPT 返回的 `answer` 文本做判定（如"检测到相似"）不如用 `quote` 的结构化 ID 可靠——文本可能被提示词美化。
+- **做法**：**以 `quote` 里的 `id` + `score` 为判定依据**，`answer` 仅作辅助展示；`expected_match_id` 优先比对 `id`，其次比对 `title`。
+
+### ⑩ 库本身有重复会污染预期
+
+- **坑**：3562 条里若已有两条高度相似（历史遗留），你写 `expected_match_id=P-10233`，系统却返回了它的亲兄弟 `P-10999`，被判"匹配错误"——其实都对。
+- **做法**：先跑"库 vs 库"自重复检测，把已知库内重复列成白名单；评测时允许"命中白名单内任一 ID"即算正确。
+
+### ⑪ 数字/单位/全半角干扰
+
+- **坑**：`800元` vs `八百元` vs `800 元`、全角半角、多余空格，可能让字面/向量比对不稳定。
+- **做法**：提交前对 `proposal_text` 做**归一化**（去空格、全角转半角、数字单位统一），与生产提交逻辑保持一致；评测集也按同一归一化口径构建。
+
+### ⑫ 评测结论要落到"业务动作"
+
+- **坑**：只报"F1=0.94"没用，业务方想知道"哪些类型的重复查不出、会不会误伤员工"。
+- **做法**：报告必须有"分类型表现 + 典型失败案例 + 阈值建议 + 改进建议"四块；把指标翻译成"漏报 7% = 每月约 N 条重复提案流入""误报 4% = 员工约每 25 次提交遇到 1 次误拦"。
+
+---
+
+> 上面代码是按我们 FastGPT 实际返回结构写的，换环境时以 `quote` 里的结构化 `id` 为准（见踩坑⑨），其余按实际微调。评测集与库快照必须配套版本化管理，否则指标不可复现。
