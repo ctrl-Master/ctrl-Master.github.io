@@ -5,8 +5,8 @@ export default defineAstroPaperConfig({
     url: "https://ctrl-Master.github.io/",
     title: "ZHX NEXUS Studio",
     description:
-      "朱志浩 · 企业信息化与系统集成实践者。长期负责银企直联、SRM、OA 等系统建设与运维，并推动 LLM 能力落地到业务知识库、智能查重与流程自动化场景。",
-    author: "朱志浩",
+      "甲方企业信息化实践者。专注系统集成与 AI 业务落地：银企直联、SRM、OA 全生命周期运维，以及企业知识库、提案查重、薪酬自动化等场景。",
+    author: "zhx",
     profile: "https://github.com/ctrl-Master",
     ogImage: "default-og.jpg",
     lang: "zh",
