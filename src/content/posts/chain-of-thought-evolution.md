@@ -1,5 +1,5 @@
 ---
-title: "从“显式推理”到“隐式内化”：大模型思维链（Chain of Thought）演进史"
+title: "大模型思维链（Chain of Thought）演进"
 pubDatetime: 2026-08-13
 description: "梳理大模型思维链（CoT）的四次迭代：从显式提示、搜索结构、强化学习到隐式内化。"
 tags: ["大模型"]

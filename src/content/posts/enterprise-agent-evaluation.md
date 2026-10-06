@@ -1,5 +1,5 @@
 ---
-title: "别凭感觉改 Prompt 了：企业级 Agent 评估体系与安全对抗实录"
+title: "企业级 Agent 该怎么评估与对抗"
 pubDatetime: 2026-09-18
 description: "企业级 Agent 评估体系的落地实录：黄金集、评估集、安全对抗集三件套怎么做，以及如何接进 CI/CD 当发布门禁。"
 tags: ["AI", "企业", "大模型"]
